@@ -1,0 +1,37 @@
+Items: {
+	CadastralCrawler: {
+		DisplayName: Cadastral Crawler
+		Tooltip:
+			'''
+			Summons a Cadastral Probe to survey the area
+			Use to activate Probe Mode
+			'''
+	}
+}
+
+Configs.CustomBiomesConfig.DisplayName: Custom Biomes Config
+NPCs.WorldNPC.DisplayName: World NPC
+
+UIHover: {
+	Demarcate: Rectangle Area
+	AddNPC: Spawn Custom NPC
+	DemarcatePolygon: Polygon Area
+	AddNPCTile: Place Custom NPC As Tile
+}
+
+Panel: {
+	MultipleTitle: Selection
+	BiomeTitle: Area
+	BiomeSchemaTitle: Biome Blueprint
+	NPCTitle: NPC
+	NPCTileTitle: NPC (Tile)
+	NPCSchemaTitle: NPC Blueprint
+	NoneSelected:
+		'''
+		Nothing is selected. Use the Select tool to select objects in the world.
+		Selectable objects include custom NPCs (both as NPCs and as tiles) and custom biome areas.
+		'''
+	MultipleSelected: Multiple objects are selected:
+}
+
+ConfigCategory.CustomBiomesConfig.Description: CustomBiomesConfig

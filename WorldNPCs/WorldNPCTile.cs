@@ -1,0 +1,76 @@
+﻿using AdventureTools.UI;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Nodes;
+using System.Threading.Tasks;
+using Terraria;
+using Terraria.DataStructures;
+using Terraria.GameContent.Drawing;
+using Terraria.ID;
+using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
+using Terraria.ObjectData;
+
+namespace AdventureTools.WorldNPCs;
+
+public sealed class WorldNPCTile : ModTile
+{
+    public override string Texture => "Terraria/Images/NPC_" + NPCID.None;
+    public static ushort TileType;
+    public override void SetStaticDefaults()
+    {
+        TileType = Type;
+        Main.tileFrameImportant[Type] = true;
+        Main.tileNoAttach[Type] = true;
+        TileID.Sets.DrawTileInSolidLayer[Type] = true;
+    }
+    public override bool CanKillTile(int i, int j, ref bool blockDamaged) => false;
+    public override bool CanExplode(int i, int j) => false;
+    public override bool PreDraw(int i, int j, SpriteBatch spriteBatch)
+    {
+        Main.instance.TilesRenderer.AddSpecialPoint(i, j, TileDrawing.TileCounterType.CustomSolid);
+        return false;
+    }
+    public override void SpecialDraw(int i, int j, SpriteBatch spriteBatch)
+    {
+        var entity = (WorldNPCTileEntity)TileEntity.ByPosition[new Point16(i, j)];
+        var schema = entity.Schema;
+        WorldNPC.PrintOnDummy(schema);
+        var p = WorldNPC.Dummy;
+        p.bodyFrame.Y = p.bodyFrame.Height * entity.BodyFrame;
+        p.legFrame.Y = p.legFrame.Height * entity.LegFrame;
+        p.direction = entity.Direction;
+        p.sitting.isSitting = entity.Sitting;
+        p.Bottom = new Vector2(i * 16 + p.width * 0.5f, (j + 1) * 16);
+        Main.PlayerRenderer.DrawPlayer(Main.Camera, p, p.position, 0f, Vector2.Zero);
+    }
+}
+public sealed class WorldNPCTileEntity : ModTileEntity
+{
+    public JsonObject Schema;
+    public uint Packed;
+    public bool Sitting => (Packed & 0b1) != 0;
+    public int Direction => ((Packed & 0b10) != 0).ToDirectionInt();
+    public int BodyFrame => (int)((Packed >> 2) & 0b11111);
+    public int LegFrame => (int)((Packed >> 7) & 0b11111);
+
+    public override bool IsTileValidForEntity(int x, int y) => Main.tile[x, y].TileType == WorldNPCTile.TileType;
+    public override void SaveData(TagCompound tag)
+    {
+        tag["data"] = Packed;
+        if (Schema is null)
+            return;
+        tag["schema"] = Schema.GetElementIndex();
+    }
+    public override void LoadData(TagCompound tag)
+    {
+        Packed = tag.Get<uint>("data");
+        if (!tag.TryGet<int>("schema", out var schema))
+            return;
+        Schema = BiomeSystem.biomesNode["NPCs"][schema].AsObject();
+    }
+}

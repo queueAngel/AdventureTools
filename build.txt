@@ -1,0 +1,6 @@
+displayName = Adventure Tools
+author = qAngel
+version = 0.1
+modReferences = Daybreak
+dllReferences = Json.More, JsonPatch.Net, JsonSchema.Net, JsonPointer.Net
+buildIgnore = *.csproj, *.user, obj\*, bin\*, lib\compile\*
