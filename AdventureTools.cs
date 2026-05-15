@@ -64,8 +64,8 @@ public sealed class BiomeSystem : ModSystem
         var dirPath = ModDirectory;
         Directory.CreateDirectory(dirPath);
         var filePath = Path.Combine(dirPath, WorldFileName);
-		using var stream = File.Open(filePath, FileMode.OpenOrCreate);
-        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { SkipValidation = true });
+		using var stream = File.Create(filePath); // we use create here to clear file contents, otherwise we risk ending up with a malformed file
+        using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { SkipValidation = true, Indented = true } );
 		biomesNode.WriteTo(writer);
 		biomesNode = null;
     }

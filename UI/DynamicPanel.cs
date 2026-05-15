@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AdventureTools.UI;
-
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
-using ReLogic.Content;
 using Terraria;
 using Terraria.GameContent.UI.Elements;
-using Terraria.Graphics;
-using Terraria.ModLoader;
 using Terraria.UI;
-using global::AdventureTools.Core;
-using Terraria.ID;
+using Daybreak.Common.UI;
 
+namespace AdventureTools.UI;
 public enum ResizeDirection : byte
 {
     None = 0,
@@ -31,29 +19,10 @@ public enum ResizeDirection : byte
 
 public sealed class DynamicPanel : UIPanel
 {
-    private static Asset<Texture2D> dragTexture;
     private Vector2 offset;
     private bool dragging;
-    internal static ResizeDirection dir;
+    public static ResizeDirection dir;
     private bool resizing;
-
-    // TODO, move panel back in if offscreen? prevent drag off screen?
-    public DynamicPanel()
-    {
-        dragTexture ??= ModContent.Request<Texture2D>("Terraria/Images/UI/PanelBorder");
-    }
-
-    //public void SetMinMaxWidth(int min, int max)
-    //{
-    //	this.minX = min;
-    //	this.maxX = max;
-    //}
-
-    //public void SetMinMaxHeight(int min, int max)
-    //{
-    //	this.minY = min;
-    //	this.maxY = max;
-    //}
 
     public override void LeftMouseDown(UIMouseEvent evt)
     {
@@ -129,7 +98,7 @@ public sealed class DynamicPanel : UIPanel
         }
         else
         {
-            if (Parent != null && !dimensions.ToRectangle().Intersects(Parent.GetDimensions().ToRectangle()))
+            if (Parent != null && !dimensions.ToRectangle().Intersects(Parent.Dimensions))
             {
                 var parentSpace = Parent.GetDimensions().ToRectangle();
                 Left.Pixels = Utils.Clamp(Left.Pixels, Width.Pixels - parentSpace.Right, 0);

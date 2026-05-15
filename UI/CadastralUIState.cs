@@ -111,6 +111,8 @@ public sealed class CadastralUIState : UIState
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
+                var wNPC = (WorldNPC)selectedNPC.ModNPC;
+                List.Add(new WorldViewport() { targetCam = selectedNPC.Center, Width = StyleDimension.FromPixels(96f), Height = StyleDimension.FromPixels(96f) } );
                 break;
         }
     }
