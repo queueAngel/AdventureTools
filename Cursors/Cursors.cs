@@ -42,6 +42,7 @@ public sealed class Cursors : ILoadable
     }
     static Cursors()
     {
+        return;
         IL_Main.DrawThickCursor += static il =>
         {
             var c = new ILCursor(il);

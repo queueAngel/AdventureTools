@@ -116,7 +116,14 @@ public sealed class WorldNPC : ModNPC
             return;
         typeName = text;
     }
-    public override bool PreAI() => Schema != null && !Static;
+    public override bool PreAI()
+    {
+        var shouldMove = Schema != null && !Static;
+        if (shouldMove)
+            return true;
+        NPC.velocity.X = 0f;
+        return false;
+    }
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {
         PrintFromNPC();

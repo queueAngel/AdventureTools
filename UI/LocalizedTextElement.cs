@@ -15,7 +15,7 @@ namespace AdventureTools.UI;
 public sealed class LocalizedTextElement : UIElement
 {
     public JsonNode BaseObject;
-    public RelativeJsonPointer Pointer;
+    public JsonPointer Pointer;
     public InputField Default;
     public UIList List;
     public override void OnInitialize()

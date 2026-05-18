@@ -66,7 +66,14 @@ public sealed class CadastralUIState : UIState
     public override void OnActivate()
     {
         foreach (var button in Buttons)
+        {
+            if (button.Type == CadastralAction.Select)
+            {
+                button.Down = true;
+                continue;
+            }
             button.Down = false;
+        }
     }
     public PanelScreen DetermineScreen()
     {
@@ -96,7 +103,7 @@ public sealed class CadastralUIState : UIState
         switch (Screen)
         {
             case PanelScreen.None:
-                List.Add(new UITextPanel<LocalizedText>(mod.GetLocalization("Panel.NoneSelected")));
+                List.Add(new UIText(mod.GetLocalization("Panel.NoneSelected")) { TextOriginX = 0f, IsWrapped = true, Width = StyleDimension.Fill, Height = StyleDimension.Fill }.WithPadding(4f));
                 break;
             case PanelScreen.Multiple:
                 List.Add(new UIText(mod.GetLocalization("Panel.MultipleSelected")));
@@ -112,13 +119,18 @@ public sealed class CadastralUIState : UIState
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
                 var wNPC = (WorldNPC)selectedNPC.ModNPC;
-                List.Add(new WorldViewport() { targetCam = selectedNPC.Center, Width = StyleDimension.FromPixels(96f), Height = StyleDimension.FromPixels(96f) } );
+                var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) }.WithPadding(16f);
+                var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, Width = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
+                var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPercent(1f) };
+                panel.Append(viewport);
+                panel.Append(boolVal);
+                List.Add(panel);
                 break;
         }
     }
     public void AddLocalizedNode(string id, JsonObject schema)
     {
-        List.Add(new LocalizedTextElement { BaseObject = schema, Pointer = RelativeJsonPointer.FromPointer(0, JsonPointer.Parse("/" + id)), Height = StyleDimension.FromPixels(32f) });
+        List.Add(new LocalizedTextElement { BaseObject = schema, Pointer = JsonPointer.Parse("/" + id), Height = StyleDimension.FromPixels(32f) });
     }
     public void AddPreviewElement(object obj)
     {
@@ -133,6 +145,8 @@ public sealed class CadastralUIState : UIState
     }
     public override void OnInitialize()
     {
+        Title.SetPadding(4f);
+
         Panel = new();
         Panel.MinWidth.Pixels = 200;
         Panel.MinHeight.Pixels = 400;
@@ -152,7 +166,7 @@ public sealed class CadastralUIState : UIState
                     CadastralAction.TogglePanel => () =>
                     {
                         if (Panel.Parent != null)
-                            Parent.RemoveChild(Panel);
+                            Panel.Parent.RemoveChild(Panel);
                         else
                         {
                             ReinitializePanel();
