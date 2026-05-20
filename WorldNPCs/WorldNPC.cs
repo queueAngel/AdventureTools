@@ -1,30 +1,56 @@
-﻿using AdventureTools.UI;
-using AdventureTools.Utilities;
+﻿using AdventureTools.Utilities;
+using Daybreak.Common.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using Terraria.UI.Chat;
 
 namespace AdventureTools.WorldNPCs;
 
 public sealed class WorldNPC : ModNPC
 {
+    public static RenderTargetLease OutlinesTarget { get; private set; }
     public static readonly Player Dummy = new();
     public JsonObject Schema;
     public bool Static;
+    public bool DrawWithOutline;
+    public static bool AnyHasOutline;
     public override string Texture => "Terraria/Images/NPC_" + NPCID.Guide;
+    public override void Load()
+    {
+        if (Main.dedServ)
+            return;
+        // Main.QueueMainThreadAction(() => OutlinesTarget = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice));
+        On_Main.DrawCachedNPCs += static (orig, self, npcCache, behindTiles) =>
+        {
+            orig(self, npcCache, behindTiles);
+            if (!ReferenceEquals(npcCache, Main.instance.DrawCacheNPCProjectiles))
+                return;
+            if (OutlinesTarget != null && AnyHasOutline)
+            {
+                var s = Main.spriteBatch;
+                s.End(out var ss);
+                var effect = DrawUtils.OutlineShader.Value;
+                var p = effect.Parameters;
+                p["uColor"].SetValue(Color.White.ToVector3());
+                p["uImageSize0"].SetValue(OutlinesTarget.Target.Size());
+                s.Begin(ss with { CustomEffect = effect });
+                s.Draw(OutlinesTarget.Target, Vector2.Zero, Color.White);
+                s.Restart(in ss);
+
+                OutlinesTarget.Scope(clearColor: Color.Transparent).Dispose();
+                AnyHasOutline = false;
+            }
+        };
+    }
+
     public override void SetStaticDefaults()
     {
         NPCID.Sets.NoTownNPCHappiness[Type] = true;
@@ -126,9 +152,22 @@ public sealed class WorldNPC : ModNPC
     }
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {
+        if (OutlinesTarget is null)
+            Main.QueueMainThreadAction(() => OutlinesTarget = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice));
+
         PrintFromNPC();
         Dummy.Center = NPC.Center;
+
+        var scope = default(RenderTargetScope);
+        if (DrawWithOutline)
+            scope = OutlinesTarget.Scope(clearColor: Color.Transparent);
         Main.PlayerRenderer.DrawPlayer(Main.Camera, Dummy, Dummy.position, 0f, Vector2.Zero);
+        if (DrawWithOutline)
+        {
+            scope.Dispose();
+            DrawWithOutline = false;
+        }
+
         return false;
     }
     public static void PrintOnDummy(JsonObject schema)

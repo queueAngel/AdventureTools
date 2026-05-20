@@ -502,6 +502,12 @@
                 config UI.
             </summary>
         </member>
+        <member name="P:Daybreak.Common.Features.Configuration.IConfigEntryMetadata.ConfigElement">
+            <summary>
+                The type of the <see cref="T:Daybreak.Common.Features.Configuration.ConfigElement"/> this
+                config entry may use for a config UI.
+            </summary>
+        </member>
         <member name="P:Daybreak.Common.Features.Configuration.IConfigEntryMetadata.Categories">
             <summary>
                 The categories this entry belongs to.  The first category is the
@@ -664,6 +670,9 @@
             <inheritdoc />
         </member>
         <member name="P:Daybreak.Common.Features.Configuration.ConfigEntry`1.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:Daybreak.Common.Features.Configuration.ConfigEntry`1.ConfigElement">
             <inheritdoc />
         </member>
         <member name="P:Daybreak.Common.Features.Configuration.ConfigEntry`1.Categories">
@@ -963,6 +972,20 @@
                 Attempts to get a config repository by its owning mod and name.
             </summary>
         </member>
+        <member name="M:Daybreak.Common.Features.Configuration.ConfigSystem.RegisterDefaultModCategorySorter(Daybreak.Common.Features.Configuration.ConfigValue{Terraria.ModLoader.Mod},System.Func{System.Collections.Generic.IEnumerable{Daybreak.Common.Features.Configuration.ConfigCategory},System.Collections.Generic.IEnumerable{Daybreak.Common.Features.Configuration.ConfigCategory}})">
+            <summary>
+                Registers a function that produces a sorted collection of config
+                categories for display.
+            </summary>
+        </member>
+        <member name="M:Daybreak.Common.Features.Configuration.ConfigSystem.RegisterDefaultModPageProvider(Daybreak.Common.Features.Configuration.ConfigValue{Terraria.ModLoader.Mod},Daybreak.Common.Features.Configuration.IDefaultModPageProvider)">
+            <summary>
+                Registers a <see cref="T:Daybreak.Common.Features.Configuration.IDefaultModPageProvider"/> for the
+                <paramref name="mod"/>.  This allows mods to create custom UIs for
+                their mod category UI, which should contain the nested categories
+                belonging to the mod.
+            </summary>
+        </member>
         <member name="T:Daybreak.Common.Features.Configuration.ConfigNullability">
             <summary>
                 The nullability contract for a config entry.
@@ -1100,6 +1123,18 @@
             <summary>
                 Resolves a <see cref="T:Daybreak.Common.Features.Configuration.ConfigResolvedValue`1"/> from a
                 <see cref="T:Daybreak.Common.Features.Configuration.ConfigValueStack`1"/>.
+            </summary>
+        </member>
+        <member name="T:Daybreak.Common.Features.Configuration.IDefaultModPageProvider">
+            <summary>
+                Used by the default config repository to create unique pages of
+                categories for each mod that owns the category.
+            </summary>
+        </member>
+        <member name="M:Daybreak.Common.Features.Configuration.IDefaultModPageProvider.AddCategoriesToContainer(Terraria.GameContent.UI.Elements.UIList,Daybreak.Common.Features.Configuration.ConfigCategory[])">
+            <summary>
+                Adds the category items to the containing UI element.  This should
+                provide your arbitrary UI to display.
             </summary>
         </member>
         <member name="T:Daybreak.Common.Features.Configuration.IConfigFormat">
@@ -3690,10 +3725,10 @@
         <member name="M:Daybreak.Common.Mathematics.Bezier.Cubic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.Cubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.Cubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.Cubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.Cubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3702,10 +3737,10 @@
         <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorCubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,System.Single)">
@@ -3714,10 +3749,10 @@
         <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.Quadratic(System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3726,10 +3761,10 @@
         <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Bezier.VectorQuadratic(System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="T:Daybreak.Common.Mathematics.Hermite">
@@ -3743,10 +3778,10 @@
         <member name="M:Daybreak.Common.Mathematics.Hermite.Cubic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.Cubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.Cubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.Cubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.Cubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3755,10 +3790,10 @@
         <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCubic(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,System.Single)">
@@ -3767,10 +3802,10 @@
         <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.CatmullRom(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3779,10 +3814,10 @@
         <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Hermite.VectorCatmullRom(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="T:Daybreak.Common.Mathematics.Interpolate">
@@ -3796,10 +3831,10 @@
         <member name="M:Daybreak.Common.Mathematics.Interpolate.Lerp(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.Lerp(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.Lerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.Lerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.Lerp(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3808,10 +3843,10 @@
         <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorLerp(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3820,10 +3855,10 @@
         <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.InverseLerp(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3832,10 +3867,10 @@
         <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.VectorInverseLerp(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3844,10 +3879,10 @@
         <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(System.Single,System.Single,System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Interpolate.Remap(System.Single,System.Single,System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="T:Daybreak.Common.Mathematics.Smooth">
@@ -3861,10 +3896,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.TimeStep(Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.TimeStep(System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.TimeStep(Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.TimeStep(Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.TimeStep(System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(Microsoft.Xna.Framework.Vector4)">
@@ -3873,10 +3908,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherTimeStep(System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Smooth.Step(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,System.Single)">
@@ -3885,10 +3920,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.Step(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.Step(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.Step(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.Step(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.Step(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3897,10 +3932,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorStep(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,System.Single)">
@@ -3909,10 +3944,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.SmootherStep(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4,Microsoft.Xna.Framework.Vector4)">
@@ -3921,10 +3956,10 @@
         <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3,Microsoft.Xna.Framework.Vector3)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(System.Single,System.Single,System.Single)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
             <inheritdoc />
         </member>
-        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2)">
+        <member name="M:Daybreak.Common.Mathematics.Smooth.VectorSmootherStep(System.Single,System.Single,System.Single)">
             <inheritdoc />
         </member>
         <member name="T:Daybreak.Common.Mathematics.ILane`1">
@@ -5473,6 +5508,16 @@
             </summary>
             <param name="ss">The <see cref="T:Daybreak.Common.Rendering.SpriteBatchSnapshot" /> to use.</param>
         </member>
+        <member name="P:Daybreak.Common.UI.ColorPicker.HSVSquare.PickerPosition">
+            <summary>
+            Normalized position of the picker used for deriving saturation and value.
+            </summary>
+        </member>
+        <member name="P:Daybreak.Common.UI.ColorPicker.HSVSquare.Hovering">
+            <summary>
+            Used over IsMouseHovering to determine if the mouse is hovering the slider and NOT draging another.
+            </summary>
+        </member>
         <member name="T:Daybreak.Common.UI.ElementExtensions">
             <summary>
                 Extensions for <see cref="T:Terraria.UI.UIElement"/>s.
@@ -5484,19 +5529,31 @@
         <member name="M:Daybreak.Common.UI.ElementExtensions.get_InnerDimensions(Terraria.UI.UIElement)">
             <inheritdoc cref="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.InnerDimensions"/>
         </member>
+        <member name="M:Daybreak.Common.UI.ElementExtensions.get_OuterDimensions(Terraria.UI.UIElement)">
+            <inheritdoc cref="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.OuterDimensions"/>
+        </member>
         <member name="M:Daybreak.Common.UI.ElementExtensions.get_ParentRelativeDimensions(Terraria.UI.UIElement)">
             <inheritdoc cref="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.ParentRelativeDimensions"/>
         </member>
         <member name="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.Dimensions">
             <summary>
                 The <paramref name="element"/>'s dimensions as a
-                <see cref="T:Microsoft.Xna.Framework.Rectangle"/>.
+                <see cref="T:Microsoft.Xna.Framework.Rectangle"/>.<br></br>
+                <inheritdoc cref="M:Terraria.UI.UIElement.GetDimensions"/>
             </summary>
         </member>
         <member name="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.InnerDimensions">
             <summary>
                 The <paramref name="element"/>'s inner dimensions as a
-                <see cref="T:Microsoft.Xna.Framework.Rectangle"/>.
+                <see cref="T:Microsoft.Xna.Framework.Rectangle"/>.<br></br>
+                <inheritdoc cref="M:Terraria.UI.UIElement.GetInnerDimensions"/>
+            </summary>
+        </member>
+        <member name="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.OuterDimensions">
+            <summary>
+                The <paramref name="element"/>'s outer dimensions as a
+                <see cref="T:Microsoft.Xna.Framework.Rectangle"/>.<br></br>
+                <inheritdoc cref="M:Terraria.UI.UIElement.GetOuterDimensions"/>
             </summary>
         </member>
         <member name="P:Daybreak.Common.UI.ElementExtensions.&lt;G&gt;$8BC9BEA7EFD30C2470415849FFD763B7.ParentRelativeDimensions">
@@ -5508,6 +5565,9 @@
                 If the element has no parent, <see cref="!:Dimensions"/> is
                 returned directly.
             </summary>
+        </member>
+        <member name="M:Daybreak.Common.UI.Grid.RecalculateChildren">
+            <inheritdoc/>
         </member>
         <member name="T:Daybreak.Common.UI.InputField">
             <summary>
@@ -5534,6 +5594,11 @@
                 The maximum number of characters allowed to be entered.
             </summary>
         </member>
+        <member name="P:Daybreak.Common.UI.InputField.AllowChatTags">
+            <summary>
+                Weither Terraria's TextSnippets will be used.
+            </summary>
+        </member>
         <member name="P:Daybreak.Common.UI.InputField.BlacklistedChars">
             <summary>
                 Any characters which may not be entered into the field.
@@ -5554,12 +5619,12 @@
         </member>
         <member name="E:Daybreak.Common.UI.InputField.OnEnter">
             <summary>
-                Ran on the frame that this field begins capturing input.
+                Ran when typing is "accepted" via either clicking off or pressing Enter.
             </summary>
         </member>
         <member name="E:Daybreak.Common.UI.InputField.OnEscape">
             <summary>
-                Ran of the frame that this field stops capturing input.
+                Ran when typing is "cancelled" via pressing Escape.
             </summary>
         </member>
         <member name="E:Daybreak.Common.UI.InputField.OnTextChanged">
@@ -5581,6 +5646,9 @@
         <member name="M:Daybreak.Common.UI.InputField.LeftMouseDown(Terraria.UI.UIMouseEvent)">
             <inheritdoc />
         </member>
+        <member name="M:Daybreak.Common.UI.InputField.LeftClick(Terraria.UI.UIMouseEvent)">
+            <inheritdoc />
+        </member>
         <member name="M:Daybreak.Common.UI.InputField.Update(Microsoft.Xna.Framework.GameTime)">
             <inheritdoc />
         </member>
@@ -5597,6 +5665,11 @@
         <member name="P:Daybreak.Common.UI.InputHelpers.CursorPositon">
             <summary>
             The index of the "cursor" where written text is inserted.
+            </summary>
+        </member>
+        <member name="P:Daybreak.Common.UI.Slider.Hovering">
+            <summary>
+            Used over IsMouseHovering to determine if the mouse is hovering the slider and NOT draging another.
             </summary>
         </member>
         <member name="T:Daybreak.Content.Authorship.DaybreakAuthorTag">

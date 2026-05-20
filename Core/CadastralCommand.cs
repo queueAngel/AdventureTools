@@ -1,8 +1,6 @@
 ﻿using AdventureTools.Security.Cryptography;
-using Microsoft.Xna.Framework;
 using System.Linq;
 using System.Text;
-using Terraria;
 using Terraria.ModLoader;
 
 namespace AdventureTools.Core;

@@ -1,19 +1,12 @@
-﻿using AdventureTools.UI;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
-using Terraria.ObjectData;
 
 namespace AdventureTools.WorldNPCs;
 
@@ -51,6 +44,7 @@ public sealed class WorldNPCTile : ModTile
 }
 public sealed class WorldNPCTileEntity : ModTileEntity
 {
+    public bool DrawWithOutline;
     public JsonObject Schema;
     public uint Packed;
     public bool Sitting => (Packed & 0b1) != 0;

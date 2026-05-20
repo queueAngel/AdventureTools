@@ -1,14 +1,12 @@
-﻿using Json.Pointer;
+﻿using AdventureTools.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text.Json.Nodes;
 using Terraria;
+using Terraria.Audio;
 using Terraria.GameContent;
-using Terraria.ModLoader.UI;
+using Terraria.ID;
 using Terraria.UI;
 using Terraria.UI.Chat;
 
@@ -27,6 +25,11 @@ public sealed class BoolVal<T> : UIElement
         GetValue = getter;
         SetValue = setter;
     }
+    public override void MouseOver(UIMouseEvent evt)
+    {
+        SoundEngine.PlaySound(SoundID.MenuTick);
+        base.MouseOver(evt);
+    }
     public override void LeftMouseDown(UIMouseEvent evt)
     {
         var value = GetValue(BaseObject);
@@ -35,16 +38,7 @@ public sealed class BoolVal<T> : UIElement
     }
     protected override void DrawSelf(SpriteBatch spriteBatch)
     {
-        var dimensions = GetDimensions();
-        var num = dimensions.Width + 1f;
-        var vector = new Vector2(dimensions.X, dimensions.Y);
-        var baseScale = new Vector2(0.8f);
-        var baseColor = UICommon.DefaultUIBlue;
-
-        var color = IsMouseHovering ? baseColor: baseColor.MultiplyRGBA(new Color(180, 180, 180));
-        var position = vector;
-
-        Terraria.ModLoader.Config.UI.ConfigElement.DrawPanel2(spriteBatch, position, TextureAssets.SettingsPanel.Value, num, dimensions.Height, color);
+        this.DrawConfigPanel(spriteBatch, out var dimensions);
         // "Yes" and "No" since no "True" and "False" translation available
         var value = GetValue(BaseObject);
         if (!value.HasValue)

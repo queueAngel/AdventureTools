@@ -18,6 +18,7 @@
 	  </PackageReference>
 		<Publicize Include="tModLoader:Terraria.ModLoader.EquipLoader.GetSearch" />
 		<Publicize Include="Daybreak:Daybreak.Common.UI.InputField.lastText" />
+		<Publicize Include="FNA" />
 	</ItemGroup>
 
 	<!-- References -->

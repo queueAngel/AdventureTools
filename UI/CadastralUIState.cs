@@ -1,11 +1,11 @@
-﻿using AdventureTools.Core;
-using AdventureTools.Items;
+﻿using AdventureTools.Items;
 using AdventureTools.Utilities;
 using AdventureTools.WorldNPCs;
 using Daybreak.Common.Rendering;
 using Json.Pointer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.Cil;
 using ReLogic.Content;
 using System;
 using System.Collections.Generic;
@@ -15,11 +15,8 @@ using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
-using Terraria.GameContent.UI.Chat;
 using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
-using Terraria.IO;
-using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.UI;
 using Terraria.UI;
@@ -62,7 +59,17 @@ public sealed class CadastralUIState : UIState
         Color = new Color(89, 116, 213, 255) * 0.9f
     };
     public CadastralButton[] Buttons = new CadastralButton[(int)CadastralAction.Max];
-
+    static CadastralUIState()
+    {
+        IL_Main.UpdateViewZoomKeys += static il =>
+        {
+            var c = new ILCursor(il);
+            var enterBlock = il.DefineLabel();
+            c.EmitDelegate(() => Main.LocalPlayer.GetModPlayer<CadastralPlayer>().operatingCrawler);
+            c.EmitBrtrue(enterBlock);
+            c.GotoNext(i => i.MatchLdcR4(out _)).MarkLabel(enterBlock);
+        };
+    }
     public override void OnActivate()
     {
         foreach (var button in Buttons)
@@ -75,7 +82,7 @@ public sealed class CadastralUIState : UIState
             button.Down = false;
         }
     }
-    public PanelScreen DetermineScreen()
+    public static PanelScreen DetermineScreen()
     {
         if (_selection.Count == 0)
             return PanelScreen.None;
@@ -86,7 +93,6 @@ public sealed class CadastralUIState : UIState
             CustomBiome => PanelScreen.Biome,
             NPC => PanelScreen.NPC,
             TileEntity => PanelScreen.NPCTile,
-            JsonObject j => j.Parent.GetPropertyName() is "Biomes" ? PanelScreen.BiomeSchema : PanelScreen.NPCSchema,
             _ => PanelScreen.None,
         };
     }
@@ -112,18 +118,25 @@ public sealed class CadastralUIState : UIState
                     AddPreviewElement(selected);
                 }
                 break;
-            case PanelScreen.BiomeSchema:
+            case PanelScreen.Biome:
                 var selectedBiome = (CustomBiome)_selection.ElementAt(0);
                 AddLocalizedNode("Name", selectedBiome.Schema);
+                break;
+            case PanelScreen.BiomeSchema:
+                var schema = SchemaVal.AnalyzingSchema;
+
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
                 var wNPC = (WorldNPC)selectedNPC.ModNPC;
                 var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) }.WithPadding(16f);
-                var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, Width = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
+                var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, MinWidth = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
                 var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPercent(1f) };
+                var schVal = new SchemaVal() { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.FromPercent(0.5f)};
                 panel.Append(viewport);
                 panel.Append(boolVal);
+                panel.Append(schVal);
+                schVal.Activate();
                 List.Add(panel);
                 break;
         }
@@ -136,10 +149,10 @@ public sealed class CadastralUIState : UIState
     {
 
     }
-    public void ReinitializePanel()
+    public void ReinitializePanel(PanelScreen withScreen = 0)
     {
         List.Clear();
-        Screen = DetermineScreen();
+        Screen = withScreen != 0 ? withScreen : DetermineScreen();
         AppendTitle();
         PopulatePanel();
     }
@@ -148,8 +161,8 @@ public sealed class CadastralUIState : UIState
         Title.SetPadding(4f);
 
         Panel = new();
-        Panel.MinWidth.Pixels = 200;
-        Panel.MinHeight.Pixels = 400;
+        Panel.MinWidth.Pixels = 308f;
+        Panel.MinHeight.Pixels = 206f;
         Panel.Append(List);
 
         for (CadastralAction i = 0; i < CadastralAction.Max; i++)
@@ -313,16 +326,27 @@ public sealed class CadastralUIState : UIState
             switch (button.Type)
             {
                 case CadastralAction.Select when _selectState == SelectionState.Selecting:
-                    _selectState = SelectionState.Selected;
-                    DoSelect();
-                    ReinitializePanel();
+                    if (DoSelect())
+                    {
+                        _selectState = SelectionState.Selected;
+                        ReinitializePanel();
+                    }
+                    else
+                        _selectState = SelectionState.None;
                     break;
             }
         }
     }
-    private static void DoSelect()
+    private static bool DoSelect()
     {
-        _selection.Clear();
+        var cleared = false;
+        void ValidateClearedState()
+        {
+            if (cleared)
+                return;
+            cleared = true;
+            _selection.Clear();
+        }
         var shortSelection = _selectStart.DistanceSQ(_selectEnd) < 64f;
         var selectBox = GeometryUtils.RectangleFromPoints(_selectStart, _selectEnd);
         foreach (var npc in Main.ActiveNPCs)
@@ -331,13 +355,14 @@ public sealed class CadastralUIState : UIState
                 continue;
             if (npc.Hitbox.Intersects(selectBox))
             {
+                ValidateClearedState();
                 _selection.Add(npc);
                 if (shortSelection)
                     break;
             }
         }
         if (shortSelection && _selection.Count != 0)
-            return;
+            return true;
         foreach (var kvp in TileEntity.ByPosition)
         {
             if (kvp.Value is not WorldNPCTileEntity)
@@ -345,13 +370,14 @@ public sealed class CadastralUIState : UIState
             var pos = kvp.Key;
             if (selectBox.Intersects(new Rectangle(pos.X * 16, (pos.Y - 1) * 16, 16, 32)))
             {
+                ValidateClearedState();
                 _selection.Add(kvp.Value);
                 if (shortSelection)
-                    return;
+                    break;
             }
         }
         if (shortSelection && _selection.Count != 0)
-            return;
+            return true;
         foreach (var biome in CollectionsMarshal.AsSpan(BiomeSystem.customBiomes))
         {
             if (!biome.WorldBox.Intersects(selectBox))
@@ -359,11 +385,13 @@ public sealed class CadastralUIState : UIState
             foreach (var vertex in biome.Area)
                 if (selectBox.Contains(vertex.X * 16, vertex.Y * 16))
                 {
+                    ValidateClearedState();
                     _selection.Add(biome);
                     if (shortSelection)
-                        return;
+                        return true;
                 }
         }
+        return _selection.Count != 0;
     }
     public override void Draw(SpriteBatch spriteBatch)
     {

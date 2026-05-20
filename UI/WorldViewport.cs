@@ -5,6 +5,7 @@ using Terraria.UI;
 using Terraria.GameContent;
 using System;
 using Terraria.ModLoader.UI;
+using Daybreak.Common.Rendering;
 
 namespace AdventureTools.UI;
 
@@ -28,15 +29,16 @@ public sealed class WorldViewport : UIElement
         reducedDims.Y += 2;
         reducedDims.Width -= 4;
         reducedDims.Height -= 4;
-        var size = new Vector2(reducedDims.Width / _realZoom, reducedDims.Height / _realZoom);
-        var rect = Utils.CenteredRectangle(tgtCam - Main.screenPosition, size);
+        var z = Main.GameZoomTarget / _realZoom;
+        var size = new Vector2(reducedDims.Width * z, reducedDims.Height * z);
+        var rect = Utils.CenteredRectangle((tgtCam - Main.screenPosition).Transform(Main.GameViewMatrix.TransformationMatrix), size);
         var outOfScreen = rect.X < 0 || rect.Y < 0;
         if (outOfScreen && Alternate != null)
         {
             Alternate.Draw(spriteBatch);
             return;
         }
-        var target = outOfScreen ? TextureAssets.MagicPixel.Value : Main.screenTarget ?? Main.screenTargetSwap ?? TextureAssets.MagicPixel.Value;
+        var target = Main.screenTarget ?? Main.screenTargetSwap ?? TextureAssets.MagicPixel.Value;
         spriteBatch.Draw(TextureAssets.MagicPixel.Value, dims.ToRectangle(), UICommon.DefaultUIBlue.MultiplyRGB(Color.LightGray));
         spriteBatch.Draw(target, reducedDims.ToRectangle(), rect, Color.White);
     }

@@ -18,7 +18,6 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.Graphics.Effects;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
 using Terraria.ModLoader.IO;
@@ -121,15 +120,11 @@ public sealed class BiomeSystem : ModSystem
 			{
 				if (element is CustomBiome)
 					continue;
-				var rect = element switch
-				{
-					NPC wN => wN.Hitbox,
-					WorldNPCTileEntity wT => new Rectangle(wT.Position.X * 16, (wT.Position.Y - 1) * 16, 16, 32),
-					_ => throw null
-				};
-				rect.X -= (int)Main.screenPosition.X;
-				rect.Y -= (int)Main.screenPosition.Y;
-				DrawUtils.Draw9Slice(sb, _selectBox.Value, rect, true);
+				if (element is NPC wN)
+					((WorldNPC)wN.ModNPC).DrawWithOutline = true;
+				else if (element is WorldNPCTileEntity wT)
+					wT.DrawWithOutline = true;
+				WorldNPC.AnyHasOutline = true;
 			}
 		}
 		Main.LocalPlayer.GetModPlayer<CadastralPlayer>().RenderProbe(sb);
