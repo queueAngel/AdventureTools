@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.GameContent;
+using Terraria.GameContent.Events;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -22,12 +23,13 @@ public sealed class WorldNPC : ModNPC
     public bool Static;
     public bool DrawWithOutline;
     public static bool AnyHasOutline;
+    public static bool ShouldClear;
     public override string Texture => "Terraria/Images/NPC_" + NPCID.Guide;
     public override void Load()
     {
         if (Main.dedServ)
             return;
-        // Main.QueueMainThreadAction(() => OutlinesTarget = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice));
+        // setting OutlinesTarget here (via mainthreadaction) causes errors for some reason
         On_Main.DrawCachedNPCs += static (orig, self, npcCache, behindTiles) =>
         {
             orig(self, npcCache, behindTiles);
@@ -40,14 +42,19 @@ public sealed class WorldNPC : ModNPC
                 var effect = DrawUtils.OutlineShader.Value;
                 var p = effect.Parameters;
                 p["uColor"].SetValue(Color.White.ToVector3());
-                p["uImageSize0"].SetValue(OutlinesTarget.Target.Size());
-                s.Begin(ss with { CustomEffect = effect });
+                p["uImageSize0"].SetValue(OutlinesTarget.Target.Size() / Main.GameZoomTarget);
+                // matrix is identity here since otherwise the transform is applied twice (once when drawing to target, again when drawing the target)
+                s.Begin(ss with { CustomEffect = effect, TransformMatrix = Matrix.Identity });
                 s.Draw(OutlinesTarget.Target, Vector2.Zero, Color.White);
                 s.Restart(in ss);
 
-                OutlinesTarget.Scope(clearColor: Color.Transparent).Dispose();
                 AnyHasOutline = false;
             }
+        };
+        On_ScreenDarkness.DrawBack += static (orig, spriteBatch) =>
+        {
+            orig(spriteBatch);
+            // clear RT once here
         };
     }
 
