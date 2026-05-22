@@ -7,6 +7,7 @@ using System.Numerics;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
+using Vec = Microsoft.Xna.Framework.Vector2;
 
 namespace AdventureTools.Core;
 
@@ -23,9 +24,9 @@ public sealed class Cursors : ILoadable
             return (BitOperations.IsPow2((int)DynamicPanel.dir) ? DragOrthogonal : DragDiagonal) + thick;
         return cursor;
     }
-    private static Microsoft.Xna.Framework.Vector2 OriginOverride(Microsoft.Xna.Framework.Vector2 origin, int cursor)
+    private static Vec OriginOverride(Vec origin, int cursor)
     {
-        if (cursor >= DragDiagonal || cursor <= DragOrthogonalOutline)
+        if (cursor >= DragDiagonal && cursor <= DragOrthogonalOutline)
             return TextureAssets.Cursors[cursor].Size() * 0.5f;
         return origin;
     }
@@ -37,7 +38,6 @@ public sealed class Cursors : ILoadable
     }
     static Cursors()
     {
-        return;
         IL_Main.DrawThickCursor += static il =>
         {
             var c = new ILCursor(il);
@@ -50,7 +50,7 @@ public sealed class Cursors : ILoadable
             c.GotoNext(MoveType.After,
                 i => i.MatchLdloca(out origin),
                 i => i.MatchLdcR4(2f),
-                i => i.MatchCall(typeof(Microsoft.Xna.Framework.Vector2).GetConstructor([typeof(float)])));
+                i => i.MatchCall(typeof(Vec).GetConstructor([typeof(float)])));
             c.EmitLdloc(origin);
             c.EmitLdloc(chosenCursor);
             c.EmitDelegate(OriginOverride);
@@ -70,7 +70,7 @@ public sealed class Cursors : ILoadable
             {
                 c.GotoNext(MoveType.After, i => i.MatchLdcR4(0f));
                 c.EmitDelegate(RotationOverride);
-                c.GotoNext(i => i.MatchInitobj<Microsoft.Xna.Framework.Vector2>());
+                c.GotoNext(i => i.MatchInitobj<Vec>());
                 c.GotoNext(MoveType.After, i => i.MatchLdloc(out _));
                 c.EmitLdloc(chosenCursor);
                 c.EmitDelegate(OriginOverride);

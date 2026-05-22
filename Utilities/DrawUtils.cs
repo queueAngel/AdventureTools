@@ -13,13 +13,6 @@ public static class DrawUtils
 {
     public static readonly Asset<Effect> OutlineShader = ModContent.Request<Effect>(nameof(AdventureTools) + "/Shaders/Outline", AssetRequestMode.ImmediateLoad);
     private static readonly int[] indexData = [0, 1];
-    public static void DrawLine(Vector2 a, Vector2 b, Color color, float thickness = 1f)
-    {
-        var gd = Main.graphics.GraphicsDevice;
-        var aVert = new VertexPositionColor(new Vector3(a.X, a.Y, 0f), color);
-        var bVert = new VertexPositionColor(new Vector3(b.X, b.Y, 0f), color);
-        gd.DrawUserIndexedPrimitives(PrimitiveType.LineList, [aVert, bVert], 0, 2, indexData, 0, 1);
-    }
     public static VertexPositionColor[] DrawPolygon(UPoint16[] poly, Color color)
     {
         var vertices = new VertexPositionColor[poly.Length];
@@ -39,7 +32,7 @@ public static class DrawUtils
         gd.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, poly, 0, ogPoly.Length, triangulated, 0, triangulated.Length / 3);
 
     }
-    public static void Draw9Slice(SpriteBatch sb, Texture2D tex, Rectangle rect, bool skipCorners = false, Color col = default)
+    public static void Draw9Slice(SpriteBatch sb, Texture2D tex, Rectangle rect, Color col = default)
     {
         if (col.PackedValue is 0)
             col = Color.White;
@@ -58,10 +51,6 @@ public static class DrawUtils
         sb.Draw(tex, new Vector2(rect.X + rect.Width - quadSize.X, rect.Y + quadSize.Y), rightSideFrame, col, 0, default, new Vector2(1, yScale), SpriteEffects.None, 0f);
         Rectangle bottomSideFrame = tex.Frame(3, 3, 1, 2);
         sb.Draw(tex, new Vector2(rect.X + quadSize.X, rect.Y + rect.Height - quadSize.Y), bottomSideFrame, col, 0, default, new Vector2(xScale, 1), SpriteEffects.None, 0f);
-
-        if (skipCorners)
-            return;
-
         Rectangle topLeftCorner = tex.Frame(3, 3);
         sb.Draw(tex, new Vector2(rect.X, rect.Y), topLeftCorner, col, 0, default, 1, SpriteEffects.None, 0f);
         Rectangle topRightCorner = tex.Frame(3, 3, 2);

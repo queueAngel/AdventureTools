@@ -19,6 +19,8 @@ UIHover: {
 	AddNPCTile: Place Custom NPC As Tile
 }
 
+SchemaUI.Schema: Blueprint:
+
 Panel: {
 	MultipleTitle: Selection
 	BiomeTitle: Area

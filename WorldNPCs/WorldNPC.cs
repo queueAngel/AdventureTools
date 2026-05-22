@@ -3,9 +3,12 @@ using Daybreak.Common.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.Events;
 using Terraria.ID;
@@ -37,6 +40,18 @@ public sealed class WorldNPC : ModNPC
                 return;
             if (OutlinesTarget != null && AnyHasOutline)
             {
+                using (OutlinesTarget.Scope(clearColor: Color.Transparent))
+                {
+                    foreach (var te in CollectionsMarshal.AsSpan(WorldNPCTile.TEsToDrawWithOutline))
+                        if (TileEntity.ByPosition.TryGetValue(te, out var t) && t is WorldNPCTileEntity wTE)
+                            wTE.Draw(te.X, te.Y);
+                    foreach (var npc in CollectionsMarshal.AsSpan(NPCsToDrawWithOutline))
+                        if (Main.npc[npc] is { active: true, ModNPC: WorldNPC wNPC })
+                            wNPC.Draw();
+                }
+                WorldNPCTile.TEsToDrawWithOutline.Clear();
+                NPCsToDrawWithOutline.Clear();
+
                 var s = Main.spriteBatch;
                 s.End(out var ss);
                 var effect = DrawUtils.OutlineShader.Value;
@@ -50,11 +65,6 @@ public sealed class WorldNPC : ModNPC
 
                 AnyHasOutline = false;
             }
-        };
-        On_ScreenDarkness.DrawBack += static (orig, spriteBatch) =>
-        {
-            orig(spriteBatch);
-            // clear RT once here
         };
     }
 
@@ -157,23 +167,29 @@ public sealed class WorldNPC : ModNPC
         NPC.velocity.X = 0f;
         return false;
     }
+    public static readonly List<byte> NPCsToDrawWithOutline = [];
+    public void Draw()
+    {
+        PrintFromNPC();
+        Dummy.Center = NPC.Center;
+        Main.PlayerRenderer.DrawPlayer(Main.Camera, Dummy, Dummy.position, 0f, Vector2.Zero);
+    }
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {
         if (OutlinesTarget is null)
             Main.QueueMainThreadAction(() => OutlinesTarget = ScreenspaceTargetPool.Shared.Rent(Main.instance.GraphicsDevice));
 
-        PrintFromNPC();
-        Dummy.Center = NPC.Center;
-
-        var scope = default(RenderTargetScope);
-        if (DrawWithOutline)
-            scope = OutlinesTarget.Scope(clearColor: Color.Transparent);
-        Main.PlayerRenderer.DrawPlayer(Main.Camera, Dummy, Dummy.position, 0f, Vector2.Zero);
+        // ok so basically this is breaking my brain and i am no longer willing to try to do this the way i wanted to:
+        // i wanted to skip using a list/queue entirely. the plan was to draw them HERE directly to the RT without clearing it, then drawing the RT, then clearing it only once
+        // unfortunately not clearing with Color.Transparent here (null with DB scopes) apparently behaves the same as clearing with Color.Black, which doesn't let me do this
+        // if there's a way to fix this i'll change my approach
         if (DrawWithOutline)
         {
-            scope.Dispose();
+            NPCsToDrawWithOutline.Add((byte)NPC.whoAmI);
             DrawWithOutline = false;
         }
+        else
+            Draw();
 
         return false;
     }
@@ -198,8 +214,8 @@ public sealed class WorldNPC : ModNPC
         }
         else
             p.hair = 0;
-        var clothingStyle = (string?)a?["Style"] ?? "Starter";
-        var bodyType = (string?)a?["BodyType"] ?? "Male";
+        var clothingStyle = (string)a?["Style"] ?? "Starter";
+        var bodyType = (string)a?["BodyType"] ?? "Male";
         p.skinVariant = PlayerVariantID.Search.GetId(bodyType + clothingStyle);
         if (a?.TryGetPropertyValue("HairDye", out var hairDyeNode) == true)
         {

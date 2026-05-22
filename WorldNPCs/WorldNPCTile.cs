@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.DataStructures;
@@ -28,18 +29,18 @@ public sealed class WorldNPCTile : ModTile
         Main.instance.TilesRenderer.AddSpecialPoint(i, j, TileDrawing.TileCounterType.CustomSolid);
         return false;
     }
+    public static readonly List<Point16> TEsToDrawWithOutline = [];
     public override void SpecialDraw(int i, int j, SpriteBatch spriteBatch)
     {
-        var entity = (WorldNPCTileEntity)TileEntity.ByPosition[new Point16(i, j)];
-        var schema = entity.Schema;
-        WorldNPC.PrintOnDummy(schema);
-        var p = WorldNPC.Dummy;
-        p.bodyFrame.Y = p.bodyFrame.Height * entity.BodyFrame;
-        p.legFrame.Y = p.legFrame.Height * entity.LegFrame;
-        p.direction = entity.Direction;
-        p.sitting.isSitting = entity.Sitting;
-        p.Bottom = new Vector2(i * 16 + p.width * 0.5f, (j + 1) * 16);
-        Main.PlayerRenderer.DrawPlayer(Main.Camera, p, p.position, 0f, Vector2.Zero);
+        var pos = new Point16(i, j);
+        var entity = (WorldNPCTileEntity)TileEntity.ByPosition[pos];
+        if (entity.DrawWithOutline)
+        {
+            TEsToDrawWithOutline.Add(pos);
+            entity.DrawWithOutline = false;
+        }
+        else
+            entity.Draw(i, j);
     }
 }
 public sealed class WorldNPCTileEntity : ModTileEntity
@@ -66,5 +67,16 @@ public sealed class WorldNPCTileEntity : ModTileEntity
         if (!tag.TryGet<int>("schema", out var schema))
             return;
         Schema = BiomeSystem.biomesNode["NPCs"][schema].AsObject();
+    }
+    public void Draw(int i, int j)
+    {
+        WorldNPC.PrintOnDummy(Schema);
+        var p = WorldNPC.Dummy;
+        p.bodyFrame.Y = p.bodyFrame.Height * BodyFrame;
+        p.legFrame.Y = p.legFrame.Height * LegFrame;
+        p.direction = Direction;
+        p.sitting.isSitting = Sitting;
+        p.Bottom = new Vector2(i * 16 + p.width * 0.5f, (j + 1) * 16);
+        Main.PlayerRenderer.DrawPlayer(Main.Camera, p, p.position, 0f, Vector2.Zero);
     }
 }

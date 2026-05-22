@@ -129,9 +129,9 @@ public sealed class CadastralUIState : UIState
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
                 var wNPC = (WorldNPC)selectedNPC.ModNPC;
-                var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) }.WithPadding(16f);
+                var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPercent(1f) }.WithPadding(16f);
                 var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, MinWidth = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
-                var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPercent(1f) };
+                var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) };
                 var schVal = new SchemaVal() { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.FromPercent(0.5f)};
                 panel.Append(viewport);
                 panel.Append(boolVal);

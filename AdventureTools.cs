@@ -10,6 +10,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -111,10 +112,16 @@ public sealed class BiomeSystem : ModSystem
 			if (a.DistanceSQ(b) >= 64f)
 			{
                 var rect = GeometryUtils.RectangleFromPoints(a - Main.screenPosition, b - Main.screenPosition);
-                DrawUtils.Draw9Slice(sb, _selectBox.Value, rect, true);
+                var tex = _selectBox.Value;
+				var centerCol = Color.White * 0.196078431372549f;
+				sb.Draw(tex, rect, centerCol);
+				sb.Draw(tex, rect.TopLeft() + Vector2.UnitX * 2f, null, Color.White, 0f, default, new Vector2(rect.Width - 4f, 2f), 0, 0);
+				sb.Draw(tex, rect.TopRight() + Vector2.UnitY * 2f, null, Color.White, 0f, Vector2.UnitX, new Vector2(2f, rect.Height - 4f), 0, 0);
+                sb.Draw(tex, rect.BottomLeft() + Vector2.UnitX * 2f, null, Color.White, 0f, Vector2.UnitY, new Vector2(rect.Width - 4f, 2f), 0, 0);
+                sb.Draw(tex, rect.TopLeft() + Vector2.UnitY * 2f, null, Color.White, 0f, default, new Vector2(2f, rect.Height - 4f), 0, 0);
             }
         }
-		else if (sel == SelectionState.Selected)
+		if (sel is SelectionState.Selected or SelectionState.Selecting)
 		{
 			foreach (var element in CadastralUIState._selection)
 			{
@@ -533,7 +540,8 @@ public unsafe struct UPoint16
 			return *(int*)p;
 	}
 	public static bool operator ==(UPoint16 lhs, UPoint16 rhs) => lhs.GetHashCode() == rhs.GetHashCode();
-	public static bool operator !=(UPoint16 lhs, UPoint16 rhs) => !(lhs == rhs); 
+	public static bool operator !=(UPoint16 lhs, UPoint16 rhs) => !(lhs == rhs);
+	public readonly override bool Equals([NotNullWhen(true)] object obj) => obj is UPoint16 other && other == this;
 }
 public sealed class CustomBiomesConfig : ModConfig
 {
