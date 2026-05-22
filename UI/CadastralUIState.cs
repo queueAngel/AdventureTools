@@ -223,6 +223,8 @@ public sealed class CadastralUIState : UIState
     {
         IngameFancyUI.Close();
         Main.LocalPlayer.GetModPlayer<CadastralPlayer>().operatingCrawler = false;
+        DynamicPanel.dir = 0;
+        _selectState = SelectionState.None;
     }
     internal static Vector2 _selectStart;
     internal static Vector2 _selectEnd;
