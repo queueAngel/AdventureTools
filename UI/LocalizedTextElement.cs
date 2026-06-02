@@ -1,8 +1,12 @@
-﻿using Daybreak.Common.UI;
+﻿using AdventureTools.Utilities;
+using Daybreak.Common.UI;
 using Json.Pointer;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json.Nodes;
+using Terraria;
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 
@@ -10,47 +14,43 @@ namespace AdventureTools.UI;
 
 public sealed class LocalizedTextElement : UIElement
 {
-    public JsonNode BaseObject;
-    public JsonPointer Pointer;
+    public JsonObject BaseObject;
     public InputField Default;
     public UIList List;
     public override void OnInitialize()
     {
-        Default = new("...");
-        Default.OnEscape += field =>
-        {
-            if (Pointer.TryEvaluate(BaseObject, out var node))
-                node["en-US"] = field.Text;
-        };
-        List = [];
-        if (Pointer.TryEvaluate(BaseObject, out var node))
-        {
-            List.AddRange(node.AsObject().Select(x =>
+        Default = new("...") { Width = StyleDimension.Fill, Height = StyleDimension.Fill};
+        Default.OnEnter += field => BaseObject["en-US"] = field.Text;
+        Append(Default);
+        /*
+        List =
+        [
+            .. BaseObject.Select(x =>
             {
                 var element = new UIElement();
+                element.OnDraw += static e => {
+                    e.DrawConfigPanel(Main.spriteBatch, out _);
+                };
                 var keyField = new InputField("...") { Text = x.Key };
                 keyField.OnEscape += field =>
                 {
-                    if (Pointer.TryEvaluate(BaseObject, out var node))
-                    {
-                        var obj = node.AsObject();
-                        if (obj.Remove(field.lastText, out var move))
-                            obj.Add(field.Text, move);
-                    }
+                    if (BaseObject.Remove(field.lastText, out var move))
+                        BaseObject.Add(field.Text, move);
                 };
                 var valueField = new InputField("...") { Text = (string)x.Value };
-                valueField.OnEscape += field =>
-                {
-                    if (Pointer.TryEvaluate(BaseObject, out var node))
-                        node[keyField.Text] = field.Text;
-                };
+                valueField.OnEscape += field => BaseObject[keyField.Text] = field.Text;
                 valueField.Height = keyField.Height = StyleDimension.Fill;
-                valueField.Width.Percent = keyField.Width.Percent = 0.4f;
-                valueField.HAlign = 1f;
+                keyField.Width = valueField.Left = StyleDimension.FromPercent(0.2f);
+                valueField.Width.Percent = 0.8f;
                 element.Append(keyField);
                 element.Append(valueField);
                 return element;
-            }));
-        }
+            }),
+        ];
+        */
+    }
+    protected override void DrawSelf(SpriteBatch spriteBatch)
+    {
+        this.DrawConfigPanel(spriteBatch, out var dimensions);
     }
 }

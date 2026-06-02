@@ -4,6 +4,8 @@ using Terraria;
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 using Daybreak.Common.UI;
+using System;
+using System.Collections.Generic;
 
 namespace AdventureTools.UI;
 public enum ResizeDirection : byte
@@ -21,9 +23,31 @@ public sealed class DynamicPanel : UIPanel
 {
     private Vector2 offset;
     private bool dragging;
-    public static ResizeDirection dir;
+    public ResizeDirection dir;
+    public static DynamicPanel HoverPanel;
     private bool resizing;
-
+    public HashSet<UIElement> Handles;
+    
+    public DynamicPanel(bool selfIsHandle = true, params UIElement[] otherHandles)
+    {
+        if (selfIsHandle)
+            Handles = [this];
+        else
+            Handles = [];
+        foreach (var item in otherHandles)
+            Handles.Add(item);
+    }
+    public override void MouseOver(UIMouseEvent evt)
+    {
+        HoverPanel = this;
+        base.MouseOver(evt);
+    }
+    public override void MouseOut(UIMouseEvent evt)
+    {
+        if (HoverPanel == this)
+            HoverPanel = null;
+        base.MouseOut(evt);
+    }
     public override void LeftMouseDown(UIMouseEvent evt)
     {
         DragStart(evt);
@@ -58,8 +82,8 @@ public sealed class DynamicPanel : UIPanel
     private void DragStart(UIMouseEvent evt)
     {
         CalculatedStyle innerDimensions = GetInnerDimensions();
-        //if (evt.Target != this)
-        //    return;
+        if (!Handles.Contains(evt.Target))
+            return;
         if (dir != 0)
         {
             offset = new Vector2(evt.MousePosition.X - innerDimensions.X - innerDimensions.Width - 6, evt.MousePosition.Y - innerDimensions.Y - innerDimensions.Height - 6);
@@ -74,7 +98,7 @@ public sealed class DynamicPanel : UIPanel
 
     private void DragEnd(UIMouseEvent evt)
     {
-        //if (evt.Target == this)
+        if (Handles.Contains(this))
         {
             dragging = false;
             resizing = false;

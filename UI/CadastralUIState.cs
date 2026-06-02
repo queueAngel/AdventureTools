@@ -1,25 +1,37 @@
 ﻿using AdventureTools.Items;
 using AdventureTools.Utilities;
 using AdventureTools.WorldNPCs;
+using Daybreak.Common.Features.Configuration;
 using Daybreak.Common.Rendering;
+using Daybreak.Common.UI;
 using Json.Pointer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.Cil;
 using ReLogic.Content;
+using ReLogic.OS;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
+using Terraria.GameContent;
+using Terraria.GameContent.UI.Chat;
 using Terraria.GameContent.UI.Elements;
+using Terraria.Graphics.Light;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.UI;
 using Terraria.UI;
+using Terraria.UI.Chat;
 
 namespace AdventureTools.UI;
 
@@ -39,6 +51,16 @@ public enum PanelScreen
     NPCTile,
     NPCSchema,
 }
+public enum SubPanelScr
+{
+    None,
+    Hair,
+    HairDye,
+    Style,
+    Accessories,
+    Dialogue,
+    Chat
+}
 public sealed class CadastralUIState : UIState
 {
     internal static readonly List<UPoint16> _processingPolygon = [];
@@ -46,6 +68,7 @@ public sealed class CadastralUIState : UIState
     internal static readonly HashSet<object> _selection = [];
     public static CadastralUIState Instance { get; } = new();
     public DynamicPanel Panel;
+    public DynamicPanel SecondaryPanel;
     public PanelScreen Screen;
     public UIList List = new()
     {
@@ -61,6 +84,7 @@ public sealed class CadastralUIState : UIState
     public CadastralButton[] Buttons = new CadastralButton[(int)CadastralAction.Max];
     static CadastralUIState()
     {
+        // allows zooming even while in this UI
         IL_Main.UpdateViewZoomKeys += static il =>
         {
             var c = new ILCursor(il);
@@ -115,39 +139,331 @@ public sealed class CadastralUIState : UIState
                 List.Add(new UIText(mod.GetLocalization("Panel.MultipleSelected")));
                 foreach (var selected in _selection)
                 {
-                    AddPreviewElement(selected);
+                    
                 }
                 break;
             case PanelScreen.Biome:
                 var selectedBiome = (CustomBiome)_selection.ElementAt(0);
-                AddLocalizedNode("Name", selectedBiome.Schema);
+                AddLocalizedNode(selectedBiome.Schema["Name"]?.AsObject());
                 break;
             case PanelScreen.BiomeSchema:
                 var schema = SchemaVal.AnalyzingSchema;
-
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
                 var wNPC = (WorldNPC)selectedNPC.ModNPC;
                 var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPercent(1f) }.WithPadding(16f);
                 var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, MinWidth = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
-                var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) };
-                var schVal = new SchemaVal() { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.FromPercent(0.5f)};
+                var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Label = wNPC.Mod.GetLocalization("SchemaUI.NPC.Static"), Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) };
+                var schVal = new SchemaVal() { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.Half};
                 panel.Append(viewport);
                 panel.Append(boolVal);
                 panel.Append(schVal);
+                boolVal.Activate();
                 schVal.Activate();
                 List.Add(panel);
                 break;
+            case PanelScreen.NPCSchema:
+                schema = SchemaVal.AnalyzingSchema;
+                if (schema?.TryGetPropertyValue("Appearance", out var appNode) == true)
+                    AppearanceNode = appNode.AsObject();
+
+                var headerPanel = new UIElement() { Height = StyleDimension.FromPixels(64f), Width = StyleDimension.Fill };
+
+                // character display
+                var cha = new UICharacter(WorldNPC.Dummy, true) { HAlign = 1f, MinWidth = StyleDimension.FromPixels(64f), MinHeight = StyleDimension.FromPixels(54f) };
+                cha.OnDraw += static _ =>
+                {
+                    savedEngine = Lighting._activeEngine;
+                    Lighting._activeEngine = FullbrightEngine.Instance;
+                    var d = WorldNPC.Dummy;
+                    d.direction = 1;
+                    WorldNPC.PrintOnDummy(SchemaVal.AnalyzingSchema);
+                };
+                headerPanel.Append(cha);
+
+                // body type
+                const string clothesStyle = "Images/UI/CharCreation/ClothStyle";
+                var fem = new UIColoredImageButton(Main.Assets.Request<Texture2D>(clothesStyle + "Female"), true);
+                var masc = new UIColoredImageButton(Main.Assets.Request<Texture2D>(clothesStyle + "Male"), true);
+                if (AppearanceNode?["BodyType"]?.ToString() is "Female")
+                    fem.SetSelected(true);
+                else
+                    masc.SetSelected(true);
+                fem.OnLeftMouseDown += (_, _) =>
+                {
+                    masc.SetSelected(false);
+                    fem.SetSelected(true);
+                    AppearanceNode["BodyType"] = "Female";
+                };
+                masc.OnLeftMouseDown += (_, _) =>
+                {
+                    fem.SetSelected(false);
+                    masc.SetSelected(true);
+                    AppearanceNode["BodyType"] = "Male";
+                };
+                fem.HAlign = masc.HAlign = 1f;
+                fem.Left.Pixels = masc.Left.Pixels = -cha.MinWidth.Pixels;
+                masc.Top.Pixels += fem.Height.Pixels;
+                headerPanel.Append(fem);
+                headerPanel.Append(masc);
+
+                // name display
+                var labelLabel = Language.GetText("UI.PlayerNameSlot");
+                var labelLabelW = ChatManager.GetStringSize(FontAssets.MouseText.Value, labelLabel.Value, Vector2.One).X + 16f;
+                var subPanel = new UIElement() { Left = StyleDimension.FromPixels(labelLabelW), Width = StyleDimension.FromPixelsAndPercent(-(102f + labelLabelW), 1f), Height = StyleDimension.Fill };
+                var name = new LocalizedTextElement() { BaseObject = schema?["Name"]?.AsObject(), Width = StyleDimension.Fill, Height = StyleDimension.FromPercent(0.5f) };
+                subPanel.Append(name);
+                name.Activate();
+                name.Default.Text = schema?["Name"]?["en-US"]?.ToString() ?? string.Empty;
+                var nLabel = new UIText(Language.GetText("UI.PlayerNameSlot")) { Height = name.Height, Width = name.Left, TextOriginY = 0.5f };
+                headerPanel.Append(subPanel);
+                headerPanel.Append(nLabel);
+                // buttons
+                var m = AdventureTools.Instance;
+                var dialogueLabel =$"{ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.AnnouncementBox])} {m.GetLocalization("SchemaUI.NPC.EditDialogue")}";
+                var shopLabel = $"{ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.DiscountCard])} {Lang.inter[28]}";
+                var dialogueButton = new TextButton() { Text = dialogueLabel, Width = StyleDimension.FromPercent(0.5f), Height = name.Height, Top = name.Height };
+                var shopButton = new TextButton() { Text = shopLabel, Width = dialogueButton.Width, Height = dialogueButton.Height, Top = dialogueButton.Height, HAlign = 1f };
+                subPanel.Append(dialogueButton);
+                subPanel.Append(shopButton);
+
+                // middle panel
+                var pickerPanel = new UIElement() { Height = StyleDimension.FromPixels(152f), Width = StyleDimension.Fill };
+
+                // PROBABLY IL EDIT COLOR PICKER FOR CUSTOM GRAYED OUT LOOK WHEN INPUT IS DISABLED
+                var picker = new ColorPicker() { Width = StyleDimension.FromPixels(128f), Height = StyleDimension.Fill, IgnoresMouseInteraction = true };
+                picker.OnChanged += static self =>
+                {
+                    if (AppearanceNode != null && CurrentColorPick != null)
+                        AppearanceNode[CurrentColorPick] = self.Color.Hex3();
+                };
+
+                var hair = PickerButton(picker, "Hair");
+                var eye = PickerButton(picker, "Eye");
+                eye.SetMiddleTexture(Main.Assets.Request<Texture2D>("Images/UI/CharCreation/ColorEyeBack"));
+                var skin = PickerButton(picker, "Skin");
+                var shirt = PickerButton(picker, "Shirt");
+                var undershirt = PickerButton(picker, "Undershirt");
+                var pants = PickerButton(picker, "Pants");
+                var shoes = PickerButton(picker, "Shoes", "Shoe");
+
+                var px = hair.Width.Pixels;
+                hair.Top = eye.Top = skin.Top = StyleDimension.FromPixels(px);
+                undershirt.Left.Pixels += px;
+                pants.Left.Pixels += px * 2f;
+                shoes.Left.Pixels += px * 3f;
+                hair.Left = eye.Left = skin.Left = StyleDimension.FromPixels(px * 0.5f);
+                eye.Left.Pixels += px;
+                skin.Left.Pixels += px * 2f;
+                picker.Left.Pixels = px * 0.5f;
+
+                var bottomPanel = new UIElement() { Height = StyleDimension.FromPixels(px * 2f), Width = StyleDimension.Fill };
+
+                bottomPanel.Append(hair);
+                bottomPanel.Append(eye);
+                bottomPanel.Append(skin);
+                bottomPanel.Append(shirt);
+                bottomPanel.Append(undershirt);
+                bottomPanel.Append(pants);
+                bottomPanel.Append(shoes);
+
+                // acc and json buttons
+                var acc = new TextButton() { Text = Lang.inter[79], Width = StyleDimension.Fill, Height = StyleDimension.Half, Action = () => OpenSecondPanel(SubPanelScr.Accessories) };
+                var jsonCopy = new TextButton() { Text = mod.GetLocalization("SchemaUI.CopyJson"), Top = StyleDimension.Half, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () => Platform.Get<IClipboard>().Value = SchemaVal.AnalyzingSchema.ToString() };
+                var jsonPaste = new TextButton() { Text = mod.GetLocalization("SchemaUI.PasteJson"), Top = StyleDimension.Half, HAlign = 1f, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () =>
+                {
+                    /*
+                    var parsed = default(JsonNode);
+                    try
+                    {
+                        parsed = JsonNode.Parse(Platform.Get<IClipboard>().Value);
+                    }
+                    catch
+                    {
+                        Main.NewText("parse errror");
+                        return;
+                    }
+                    // DOESN'T REMOVE REFERENCES TO SCHEMAS IN DIFFERENT PLACES
+                    // PERHAPS WRITE SOME WAY TO DEEP COPY?
+                    SchemaVal.AnalyzingSchema.ReplaceWith(parsed);
+                    */
+                }};
+                var toBr = px * 4.25f;
+                var brButtons = new UIElement() { Height = StyleDimension.Fill, Width = new(-toBr - 7f, 1f), Left = StyleDimension.FromPixels(toBr) };
+                brButtons.Append(acc);
+                brButtons.Append(jsonCopy);
+                brButtons.Append(jsonPaste);
+                bottomPanel.Append(brButtons);
+
+                // pickers
+                var pickersLeft = new StyleDimension(picker.Width.Pixels + picker.Left.Pixels + 8f, picker.Width.Percent + picker.Left.Percent);
+                var pickersWidth = new StyleDimension(-pickersLeft.Pixels - 8f, 1f);
+                var pickersHeight = StyleDimension.FromPercent(1f / 3f);
+                var hairStylePicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.Hair,
+                    Label = Main.Assets.Request<Texture2D>("Images/UI/CharCreation/HairStyle_Hair"),
+                    Left = pickersLeft,
+                    Width = pickersWidth,
+                    Height = pickersHeight
+                };
+                pickerPanel.Append(hairStylePicker);
+
+                Main.instance.LoadItem(ItemID.HairDyeRemover);
+                var hairDyePicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.HairDye,
+                    Label = TextureAssets.Item[ItemID.HairDyeRemover],
+                    Left = pickersLeft,
+                    Width = pickersWidth,
+                    Height = pickersHeight,
+                    Top = pickersHeight,
+                };
+                pickerPanel.Append(hairDyePicker);
+
+                var stylePicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.Style,
+                    Label = Main.Assets.Request<Texture2D>("Images/UI/CharCreation/ColorUndershirt"),
+                    Left = pickersLeft,
+                    Width = pickersWidth,
+                    Height = pickersHeight,
+                    Top = new(0f, pickersHeight.Percent * 2f)
+                };
+                pickerPanel.Append(stylePicker);
+
+                pickerPanel.Append(picker);
+
+                // VOICE PICKER SHOULD GO HERE
+                // 1.4.5 SEPARATES VOICE INTO VARIANT (WHICH IS SAVED AND INHERENT TO THE CHARACTER) AND OVERRIDE (WHICH COMES FROM ITEMS AND OTHER EFFECTS)
+                // ALSO VOICE PITCH
+
+                List.Add(headerPanel);
+                List.Add(pickerPanel);
+                List.Add(bottomPanel);
+                break;
         }
     }
-    public void AddLocalizedNode(string id, JsonObject schema)
+    private static UIColoredImageButton _lastPicked;
+    private static UIColoredImageButton PickerButton(ColorPicker picker, string thingName, string thingJsonName = null)
     {
-        List.Add(new LocalizedTextElement { BaseObject = schema, Pointer = JsonPointer.Parse("/" + id), Height = StyleDimension.FromPixels(32f) });
+        const string path = "Images/UI/CharCreation/Color";
+        var elem = new UIColoredImageButton(Main.Assets.Request<Texture2D>(path + thingName));
+        var pick = (thingJsonName ?? thingName) + "Color";
+        elem.OnLeftMouseDown += (_, _) =>
+        {
+            picker.IgnoresMouseInteraction = false;
+            CurrentColorPick = pick;
+            picker.Color = elem._color;
+            _lastPicked?.SetSelected(false);
+            _lastPicked = elem;
+            elem.SetSelected(true);
+        };
+        elem.OnDraw += self =>
+        {
+            ((UIColoredImageButton)self).SetColor(SchemaUtils.Hex(AppearanceNode, pick) ?? Color.White);
+        };
+        return elem;
     }
-    public void AddPreviewElement(object obj)
+    internal static JsonObject AppearanceNode;
+    internal static string CurrentColorPick;
+    internal static ILightingEngine savedEngine;
+    public sealed class FullbrightEngine : ILightingEngine
     {
-
+        public static readonly FullbrightEngine Instance = new();
+        public void AddLight(int x, int y, Vector3 color) { }
+        public void Clear() { }
+        public Vector3 GetColor(int x, int y) => Vector3.One;
+        public void ProcessArea(Rectangle area) { }
+        public void Rebuild() { }
+    }
+    public static UIText SimpleLabel(LocalizedText t) => new(t) { Left = StyleDimension.FromPixels(10f), TextOriginX = 0f, TextOriginY = 0.5f, VAlign = 0.5f, MinWidth = StyleDimension.FromPixels(64f), MinHeight = StyleDimension.FromPixels(16f) };
+    public void AddLocalizedNode(JsonObject node)
+    {
+        List.Add(new LocalizedTextElement { BaseObject = node, Height = StyleDimension.FromPixels(32f) });
+    }
+    public SubPanelScr OpenTo;
+    public void OpenSecondPanel(SubPanelScr screen)
+    {
+        OpenTo = screen;
+        var panel = SecondaryPanel;
+        panel.RemoveAllChildren();
+        switch (screen)
+        {
+            case SubPanelScr.Hair:
+                panel.Width.Pixels = 32f * 8f;
+                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
+                panel.Recalculate();
+                var grid = new DynamicGrid()
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 44f,
+                    ElementHeight = 44f,
+                    OverflowHidden = true,
+                };
+                panel.Handles.Add(grid);
+                panel.Append(grid);
+                grid.Add(Enumerable.Range(0, HairLoader.Count - 1).Select(i =>
+                {
+                    var but = new UIHairStyleButton(WorldNPC.Dummy, i);
+                    but.OnLeftMouseDown += static (_, e) => AppearanceNode?["Hair"] = ((UIHairStyleButton)e).HairStyleId;
+                    return but;
+                }));
+                break;
+            case SubPanelScr.HairDye:
+                grid = new DynamicGrid()
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 72f,
+                    ElementHeight = 50f,
+                    OverflowHidden = true,
+                };
+                panel.Handles.Add(grid);
+                panel.Append(grid);
+                panel.Width.Pixels = 32f * 8f;
+                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
+                grid.Add(new HairDyeDisplay(ContentSamples.ItemsByType[ItemID.HairDyeRemover], WorldNPC.Dummy));
+                grid.Add(Enumerable.Range(0, ItemLoader.ItemCount - 1).Where(i => ContentSamples.ItemsByType[i].hairDye != -1 && i != ItemID.HairDyeRemover).Select(i =>
+                {
+                    return new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy);
+                }));
+                panel.Recalculate();
+                break;
+            case SubPanelScr.Style:
+                grid = new DynamicGrid()
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 64f,
+                    ElementHeight = 82f,
+                    OverflowHidden = true,
+                };
+                panel.Handles.Add(grid);
+                panel.Append(grid);
+                panel.Width.Pixels = 32f * 8f;
+                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
+                grid.Add(Enumerable.Range(0, PlayerVariantID.Count - 1).Where(i => PlayerVariantID.Sets.Male[i]).Select(i =>
+                {
+                    return new VariantDisplay(i, WorldNPC.Dummy);
+                }));
+                break;
+            case SubPanelScr.Accessories:
+                for (var i = EquipType.Head; i <= EquipType.Beard; i++)
+                {
+                    
+                }
+                break;
+        }
+        Append(panel);
     }
     public void ReinitializePanel(PanelScreen withScreen = 0)
     {
@@ -158,9 +474,16 @@ public sealed class CadastralUIState : UIState
     }
     public override void OnInitialize()
     {
+        SecondaryPanel = new();
+        // prep second panel for drawing player dummy
+        SecondaryPanel.OnDraw += static _ =>
+        {
+            WorldNPC.PrintOnDummy(SchemaVal.AnalyzingSchema);
+            WorldNPC.Dummy.direction = 1;
+        };
         Title.SetPadding(4f);
 
-        Panel = new();
+        Panel = new(true, List._innerList, Title, Separator);
         Panel.MinWidth.Pixels = 308f;
         Panel.MinHeight.Pixels = 206f;
         Panel.Append(List);
@@ -223,7 +546,7 @@ public sealed class CadastralUIState : UIState
     {
         IngameFancyUI.Close();
         Main.LocalPlayer.GetModPlayer<CadastralPlayer>().operatingCrawler = false;
-        DynamicPanel.dir = 0;
+        DynamicPanel.HoverPanel = null;
         _selectState = SelectionState.None;
     }
     internal static Vector2 _selectStart;
@@ -401,6 +724,11 @@ public sealed class CadastralUIState : UIState
         spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp });
         base.Draw(spriteBatch);
         spriteBatch.Restart(ss);
+        if (savedEngine != null)
+        {
+            Lighting._activeEngine = savedEngine;
+            savedEngine = null;
+        }
     }
 }
 

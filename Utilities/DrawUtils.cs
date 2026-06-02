@@ -12,7 +12,6 @@ namespace AdventureTools.Utilities;
 public static class DrawUtils
 {
     public static readonly Asset<Effect> OutlineShader = ModContent.Request<Effect>(nameof(AdventureTools) + "/Shaders/Outline", AssetRequestMode.ImmediateLoad);
-    private static readonly int[] indexData = [0, 1];
     public static VertexPositionColor[] DrawPolygon(UPoint16[] poly, Color color)
     {
         var vertices = new VertexPositionColor[poly.Length];

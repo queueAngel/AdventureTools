@@ -7,6 +7,8 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
 using Terraria.ID;
+using Terraria.Localization;
+using Terraria.ModLoader.UI;
 using Terraria.UI;
 using Terraria.UI.Chat;
 
@@ -14,12 +16,17 @@ namespace AdventureTools.UI;
 
 public sealed class BoolVal<T>(T baseObj, Func<T, bool?> getter, Action<T, bool> setter) : UIElement
 {
-    private static Asset<Texture2D> _toggleTexture = Main.Assets.Request<Texture2D>("Images/UI/Settings_Toggle");
+    private static readonly Asset<Texture2D> _toggleTexture = Main.Assets.Request<Texture2D>("Images/UI/Settings_Toggle");
 
     public Func<T, bool?> GetValue = getter;
     public Action<T, bool> SetValue = setter;
     public T BaseObject = baseObj;
     private float _anim;
+    public LocalizedText Label;
+    public override void OnInitialize()
+    {
+        Append(CadastralUIState.SimpleLabel(Label));
+    }
     public override void MouseOver(UIMouseEvent evt)
     {
         SoundEngine.PlaySound(SoundID.MenuTick);
@@ -30,6 +37,16 @@ public sealed class BoolVal<T>(T baseObj, Func<T, bool?> getter, Action<T, bool>
         var value = GetValue(BaseObject);
         if (value.HasValue)
             SetValue(BaseObject, !value.Value);
+    }
+    public override void Update(GameTime gameTime)
+    {
+        if (IsMouseHovering && Label != null)
+        {
+            var hoverHint = Label.Key + "_Tip";
+            if (Language.Exists(hoverHint))
+                UICommon.TooltipMouseText(Language.GetTextValue(hoverHint));
+        }
+        base.Update(gameTime);
     }
     protected override void DrawSelf(SpriteBatch spriteBatch)
     {
@@ -54,9 +71,9 @@ public sealed class BoolVal<T>(T baseObj, Func<T, bool?> getter, Action<T, bool>
         spriteBatch.Draw(tex, drawPosition, new Rectangle(sourceFull.X + 6, 0, 2, sourceFull.Height), Color.Black, 0f, new Vector2(1f, sourceFull.Height * 0.5f), new Vector2(8f, 1f), 0, 0);
         spriteBatch.Draw(tex, drawPosition, new Rectangle(sourceFull.X + 5, 0, 9, sourceFull.Height), Color.Black, 0f, new Vector2(-6f, sourceFull.Height * 0.5f), 1, 0, 0);
 
-        _anim = float.Lerp(_anim, Value ? 1f : -1f, 0.2f);
+        _anim = float.Lerp(_anim, Value ? 1f : 0f, 0.25f);
         var useRect = Value ? sourceFull : sourceRectangle;
-        spriteBatch.Draw(tex, drawPosition + new Vector2(_anim * 8f, 0f), useRect, Color.White, 0f, new Vector2(useRect.Width * 0.5f, useRect.Height * 0.5f), Vector2.One, SpriteEffects.None, 0f);
+        spriteBatch.Draw(tex, drawPosition + new Vector2((_anim * 2f - 1f) * 8f, 0f), useRect, Color.White, 0f, new Vector2(useRect.Width * 0.5f, useRect.Height * 0.5f), Vector2.One, SpriteEffects.None, 0f);
         // spriteBatch.Draw(TextureAssets.MagicPixel.Value, dimensions.ToRectangle(), Color.Red * 0.5f);
     }
 }

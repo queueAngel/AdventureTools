@@ -20,8 +20,9 @@ public sealed class Cursors : ILoadable
     public static short DragOrthogonalOutline { get; private set; } = -1;
     private static int CursorOverride(int cursor, int thick)
     {
-        if (DynamicPanel.dir != 0)
-            return (BitOperations.IsPow2((int)DynamicPanel.dir) ? DragOrthogonal : DragDiagonal) + thick;
+        var pan = DynamicPanel.HoverPanel;
+        if (pan is { dir: not 0 })
+            return (BitOperations.IsPow2((int)pan.dir) ? DragOrthogonal : DragDiagonal) + thick;
         return cursor;
     }
     private static Vec OriginOverride(Vec origin, int cursor)
@@ -32,7 +33,7 @@ public sealed class Cursors : ILoadable
     }
     private static float RotationOverride(float rotation)
     {
-        if (DynamicPanel.dir is ResizeDirection.Up or ResizeDirection.Down or ResizeDirection.UpRight or ResizeDirection.DownLeft)
+        if (DynamicPanel.HoverPanel is { dir: ResizeDirection.Up or ResizeDirection.Down or ResizeDirection.UpRight or ResizeDirection.DownLeft })
             return MathHelper.PiOver2;
         return rotation;
     }

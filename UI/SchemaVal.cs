@@ -15,11 +15,9 @@ using Terraria.UI;
 
 namespace AdventureTools.UI;
 
-public sealed class BackgroundMarquee : MarqueeText<string>
+public sealed class BackgroundMarquee(string text, float scale = 1, bool large = false) : MarqueeText<string>(text, scale, large)
 {
-    private static readonly Asset<Texture2D> _statPanel = Main.Assets.Request<Texture2D>("Images/UI/Bestiary/Stat_Panel");
     public Color PanelColor = UICommon.DefaultUIBlue;
-    public BackgroundMarquee(string text, float scale = 1, bool large = false) : base(text, scale, large) { }
     protected override void DrawSelf(SpriteBatch spriteBatch)
     {
         var dims = this.Dimensions;
@@ -43,7 +41,7 @@ public sealed class SchemaVal : UIElement
         Name.PanelColor *= 0.5f;
         Name.PanelColor.A = byte.MaxValue;
         var m = AdventureTools.Instance;
-        Append(new UIText(m.GetLocalization("SchemaUI.Schema")) { Left = StyleDimension.FromPixels(10f), TextOriginX = 0f, TextOriginY = 0.5f, VAlign = 0.5f, MinWidth = StyleDimension.FromPixels(64f), MinHeight = StyleDimension.FromPixels(16f)});
+        Append(CadastralUIState.SimpleLabel(m.GetLocalization("SchemaUI.Schema")));
         Append(Name);
         Append(new TextButton() { HAlign = 1f, VAlign = 0.5f, Left = StyleDimension.FromPixels(-3f), MinWidth = StyleDimension.FromPixels(32f), MinHeight = StyleDimension.FromPixels(32f), Text = ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.WireKite]), Action = () =>
         {

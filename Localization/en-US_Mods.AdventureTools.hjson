@@ -19,7 +19,22 @@ UIHover: {
 	AddNPCTile: Place Custom NPC As Tile
 }
 
-SchemaUI.Schema: Blueprint:
+SchemaUI: {
+	Schema: Blueprint:
+	CopyJson: Copy as JSON
+	PasteJson: Paste from JSON
+
+	NPC: {
+		Static: Static
+		Static_Tip:
+			'''
+			Whether this custom NPC should stay still instead of moving
+			(Consider using tile-based NPCs instead, unless you need to place one where there's already a tile)
+			'''
+		EditDialogue: Dialogue
+		EditShop: Edit Shop
+	}
+}
 
 Panel: {
 	MultipleTitle: Selection
@@ -37,3 +52,13 @@ Panel: {
 }
 
 ConfigCategory.CustomBiomesConfig.Description: CustomBiomesConfig
+
+// Vanilla doesn't have names for these, because it never displays them
+PlayerVariantNames: {
+	Starter: Starter
+	Sticker: Sticker
+	Gangster: Gangster
+	Coat: Coat
+	Dress: Dress
+	DisplayDoll: Doll
+}

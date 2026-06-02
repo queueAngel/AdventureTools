@@ -17,9 +17,20 @@
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 		<Publicize Include="tModLoader:Terraria.ModLoader.EquipLoader.GetSearch" />
+		<Publicize Include="tModLoader:Terraria.ModLoader.EquipLoader.slotToId" />
+		<Publicize Include="tModLoader:Terraria.GameContent.UI.Elements.UIList._innerList" />
+		<Publicize Include="tModLoader:Terraria.Lighting._activeEngine" />
+		<Publicize Include="tModLoader:Terraria.GameContent.UI.Elements.UIColoredImageButton._color" />
+		<Publicize Include="tModLoader:Terraria.UI.UIElement.Parent" />
+		<Publicize Include="tModLoader:Terraria.UI.UIElement._dimensions" />
+		<Publicize Include="tModLoader:Terraria.UI.UIElement._outerDimensions" />
+		<Publicize Include="tModLoader:Terraria.UI.UIElement._innerDimensions" />
+		<Publicize Include="tModLoader:Terraria.UI.UIElement.GetDimensionsBasedOnParentDimensions" />
 		<Publicize Include="Daybreak:Daybreak.Common.UI.InputField.lastText" />
 		<Publicize Include="Daybreak:Daybreak.Common.UI.MarqueeText`1.textScale" />
+		<Publicize Include="Daybreak:Daybreak.Content.UI.SearchBar" />
 		<Publicize Include="FNA" />
+		<Publicize Include="ReLogic" />
 	</ItemGroup>
 
 	<!-- References -->
