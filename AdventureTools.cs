@@ -95,14 +95,14 @@ public sealed class BiomeSystem : ModSystem
 		var processing = CadastralUIState._processingPolygon;
 		if (processing.Count != 0)
 		{
+			var rD = CadastralUIState._rectangleDemarcation;
+            var up = CadastralPlayer.realPosition;
+            var col = rD || up == processing[0] ? Color.Lime : Color.Yellow;
             for (int i = 0; i < processing.Count - 1; i++)
             {
-                Utils.DrawLine(sb, processing[i].ToWorld(), processing[i + 1].ToWorld(), Color.White, Color.White, 2f);
+                Utils.DrawLine(sb, processing[i].ToWorld(), processing[i + 1].ToWorld(), rD ? col : Color.White, rD ? col : Color.White, 2f);
             }
-			var up = CadastralPlayer.realPosition;
-			var procFinish = CadastralUIState._processingPolygonFinished;
-			var col = procFinish ? Color.White : up == processing[0] ? Color.Lime : Color.Yellow;
-            Utils.DrawLine(sb, processing[^1].ToWorld(), procFinish ? processing[0].ToWorld() : up.ToWorld(), col, col, 2f);
+            Utils.DrawLine(sb, processing[^1].ToWorld(), rD ? processing[0].ToWorld() : up.ToWorld(), col, col, 2f);
         }
 		var sel = CadastralUIState._selectState;
 		if (sel == SelectionState.Selecting)

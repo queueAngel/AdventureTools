@@ -64,7 +64,6 @@ public enum SubPanelScr
 public sealed class CadastralUIState : UIState
 {
     internal static readonly List<UPoint16> _processingPolygon = [];
-    internal static bool _processingPolygonFinished;
     internal static readonly HashSet<object> _selection = [];
     public static CadastralUIState Instance { get; } = new();
     public DynamicPanel Panel;
@@ -389,6 +388,7 @@ public sealed class CadastralUIState : UIState
         OpenTo = screen;
         var panel = SecondaryPanel;
         panel.RemoveAllChildren();
+        panel.ResetHandles();
         switch (screen)
         {
             case SubPanelScr.Hair:
@@ -407,7 +407,7 @@ public sealed class CadastralUIState : UIState
                 };
                 panel.Handles.Add(grid);
                 panel.Append(grid);
-                grid.Add(Enumerable.Range(0, HairLoader.Count - 1).Select(i =>
+                grid.Add(Enumerable.Range(0, HairLoader.Count - 1).Select(static i =>
                 {
                     var but = new UIHairStyleButton(WorldNPC.Dummy, i);
                     but.OnLeftMouseDown += static (_, e) => AppearanceNode?["Hair"] = ((UIHairStyleButton)e).HairStyleId;
@@ -430,7 +430,7 @@ public sealed class CadastralUIState : UIState
                 panel.Width.Pixels = 32f * 8f;
                 panel.Height.Pixels = panel.Width.Pixels * 1.25f;
                 grid.Add(new HairDyeDisplay(ContentSamples.ItemsByType[ItemID.HairDyeRemover], WorldNPC.Dummy));
-                grid.Add(Enumerable.Range(0, ItemLoader.ItemCount - 1).Where(i => ContentSamples.ItemsByType[i].hairDye != -1 && i != ItemID.HairDyeRemover).Select(i =>
+                grid.Add(Enumerable.Range(0, ItemLoader.ItemCount - 1).Where(static i => ContentSamples.ItemsByType[i].hairDye != -1 && i != ItemID.HairDyeRemover).Select(static i =>
                 {
                     return new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy);
                 }));
@@ -451,16 +451,44 @@ public sealed class CadastralUIState : UIState
                 panel.Append(grid);
                 panel.Width.Pixels = 32f * 8f;
                 panel.Height.Pixels = panel.Width.Pixels * 1.25f;
-                grid.Add(Enumerable.Range(0, PlayerVariantID.Count - 1).Where(i => PlayerVariantID.Sets.Male[i]).Select(i =>
+                grid.Add(Enumerable.Range(0, PlayerVariantID.Count - 1).Where(static i => PlayerVariantID.Sets.Male[i]).Select(static i =>
                 {
                     return new VariantDisplay(i, WorldNPC.Dummy);
                 }));
                 break;
             case SubPanelScr.Accessories:
-                for (var i = EquipType.Head; i <= EquipType.Beard; i++)
-                {
-                    
-                }
+                var list = new UIList() { Height = StyleDimension.Fill, Width = StyleDimension.Fill };
+                /*
+                list.AddRange(EquipLoader.EquipTypes.Select(static t => 
+                    new EquipPicker 
+                    { 
+                        Dummy = WorldNPC.Dummy,
+                        All = true,
+                        Type = t,
+                        Width = StyleDimension.FromPercent(0.99f),
+                        Height = StyleDimension.FromPixels(32f),
+                        ButtonHeight = StyleDimension.FromPixels(32f),
+                        MenuHeight = StyleDimension.FromPixels(256f)
+                    }
+                ));
+                */
+                foreach (var el in EquipLoader.EquipTypes.Select(static t =>
+                    new EquipPicker
+                    {
+                        OverflowHidden = true,
+                        Dummy = WorldNPC.Dummy,
+                        All = true,
+                        Type = t,
+                        Width = StyleDimension.FromPercent(0.995f),
+                        Height = StyleDimension.FromPixels(42f),
+                        ButtonHeight = StyleDimension.FromPixels(42f),
+                        MenuHeight = StyleDimension.FromPixels(256f)
+                    }))
+                    list.Add(el);
+                panel.Handles.Add(list._innerList);
+                panel.Append(list);
+                panel.Width.Pixels = 32f * 8f;
+                panel.Height.Pixels = 32f * 12f;
                 break;
         }
         Append(panel);
@@ -502,7 +530,10 @@ public sealed class CadastralUIState : UIState
                     CadastralAction.TogglePanel => () =>
                     {
                         if (Panel.Parent != null)
-                            Panel.Parent.RemoveChild(Panel);
+                        {
+                            Panel.Remove();
+                            SecondaryPanel.Remove();
+                        }
                         else
                         {
                             ReinitializePanel();
@@ -562,6 +593,20 @@ public sealed class CadastralUIState : UIState
             _selectState = 0;
         }
     }
+    internal static bool _rectangleDemarcation;
+    private static void PushProcessingPoly()
+    {
+        var area = _processingPolygon.ToArray();
+        var box = GeometryUtils.BoundingBox(area);
+        var wBox = new Rectangle(box.Left * 16, box.Top * 16, (box.Right - box.Left) * 16, (box.Bottom - box.Top) * 16);
+        BiomeSystem.customBiomes.Add(new CustomBiome()
+        {
+            Area = area,
+            BoundingBox = box,
+            WorldBox = wBox,
+            Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject()
+        }); // debug
+    }
     public override void LeftMouseDown(UIMouseEvent evt)
     {
         if (evt.Target != this)
@@ -577,32 +622,20 @@ public sealed class CadastralUIState : UIState
                     _selectState = SelectionState.Selecting;
                     break;
                 case CadastralAction.Demarcate:
+                    _processingPolygon.Clear();
+                    _processingPolygon.AddRange(Enumerable.Repeat(CadastralPlayer.realPosition, 4));
+                    _rectangleDemarcation = true;
                     break;
                 case CadastralAction.DemarcatePolygon:
                     SoundEngine.PlaySound(SoundID.Item132);
-                    if (_processingPolygonFinished)
+                    var up = CadastralPlayer.realPosition;
+                    if (_processingPolygon.Count > 2 && up == _processingPolygon[0])
                     {
-                        var area = _processingPolygon.ToArray();
-                        var box = GeometryUtils.BoundingBox(area);
-                        var wBox = new Rectangle(box.Left * 16, box.Top * 16, (box.Right - box.Left) * 16, (box.Bottom - box.Top) * 16);
-                        BiomeSystem.customBiomes.Add(new CustomBiome()
-                        {
-                            Area = area,
-                            BoundingBox = box,
-                            WorldBox = wBox,
-                            Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject()
-                        }); // debug
+                        PushProcessingPoly();
                         _processingPolygon.Clear();
-                        _processingPolygonFinished = false;
                     }
                     else
-                    {
-                        var up = CadastralPlayer.realPosition;
-                        if (_processingPolygon.Count > 2 && up == _processingPolygon[0])
-                            _processingPolygonFinished = true;
-                        else
-                            _processingPolygon.Add(up);
-                    }
+                        _processingPolygon.Add(up);
                     break;
                 case CadastralAction.AddNPC:
                     SoundEngine.PlaySound(SoundID.Item132);
@@ -639,6 +672,13 @@ public sealed class CadastralUIState : UIState
 
         if (_selectState is SelectionState.Selecting)
             _selectEnd = CadastralPlayer.realMouse;
+        if (_rectangleDemarcation && _processingPolygon.Count == 4)
+        {
+            var start = _processingPolygon[0];
+            var end = _processingPolygon[2] = CadastralPlayer.realPosition;
+            _processingPolygon[1] = new() { X = end.X, Y = start.Y };
+            _processingPolygon[3] = new() { X = start.X, Y = end.Y };
+        }
     }
     public override void LeftMouseUp(UIMouseEvent evt)
     {
@@ -658,6 +698,12 @@ public sealed class CadastralUIState : UIState
                     }
                     else
                         _selectState = SelectionState.None;
+                    break;
+                case CadastralAction.Demarcate:
+                    _rectangleDemarcation = false;
+                    if (_processingPolygon.Count == 4 && _processingPolygon[0] != _processingPolygon[2])
+                        PushProcessingPoly();
+                    _processingPolygon.Clear();
                     break;
             }
         }

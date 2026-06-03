@@ -271,7 +271,7 @@ public sealed class WorldNPC : ModNPC
         PrintOnDummy(Schema);
     }
     /// FROM EQUIPLOADER CHECK AFTER 1.4.5
-    private static ref int GetPlayerEquip(Player player, EquipType type)
+    public static ref int GetPlayerEquip(Player player, EquipType type)
     {
         switch (type)
         {
@@ -293,7 +293,7 @@ public sealed class WorldNPC : ModNPC
         }
         throw null;
     }
-    private static ref int GetPlayerDye(Player player, EquipType type)
+    public static ref int GetPlayerDye(Player player, EquipType type)
     {
         switch (type)
         {

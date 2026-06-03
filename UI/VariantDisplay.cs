@@ -26,12 +26,12 @@ public sealed class VariantDisplay(int male, Player player) : UIElement
     protected override void DrawSelf(SpriteBatch spriteBatch)
     {
         this.DrawConfigPanel(spriteBatch, out var dims);
-        // spriteBatch.FlushBatch(); // spritebatch is deferred here...,. but for some reason this is drawn on top of the head if i don't flush
+        spriteBatch.FlushBatch(); // spritebatch is deferred here...,. but for some reason this is drawn on top of the head if i don't flush
         var prev = Player.skinVariant;
         Player.skinVariant = Player.Male ? MaleVersion : PlayerVariantID.Sets.AltGenderReference[MaleVersion];
-        Main.PlayerRenderer.DrawPlayer(Main.Camera, Player, new Vector2(-8f + dims.X + dims.Width * 0.5f, -2f + dims.Y + dims.Height * 0.25f), 0f, Vector2.Zero, scale: 50f);
+        Main.PlayerRenderer.DrawPlayer(Main.Camera, Player, new Vector2(-8f + dims.X + dims.Width * 0.5f, -6f + dims.Y + dims.Height * 0.25f) + Main.screenPosition, 0f, Vector2.Zero, scale: 1f);
         Player.skinVariant = prev;
         var font = FontAssets.MouseText.Value;
-        ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, Text.Value, new Vector2(dims.X + dims.Width * 0.5f, dims.Y + dims.Height * 0.75f) - ChatManager.GetStringSize(font, Text.Value, Vector2.One) * 0.5f, Color.White, 0f, Vector2.Zero, Vector2.One);
+        ChatManager.DrawColorCodedStringWithShadow(spriteBatch, font, Text.Value, new Vector2(dims.X + dims.Width * 0.5f, dims.Y + dims.Height * 0.9f) - ChatManager.GetStringSize(font, Text.Value, Vector2.One) * 0.5f, Color.White, 0f, Vector2.Zero, Vector2.One);
     }
 }

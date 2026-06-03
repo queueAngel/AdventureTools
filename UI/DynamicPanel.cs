@@ -25,12 +25,13 @@ public sealed class DynamicPanel : UIPanel
     private bool dragging;
     public ResizeDirection dir;
     public static DynamicPanel HoverPanel;
+    public bool SelfIsHandle;
     private bool resizing;
     public HashSet<UIElement> Handles;
     
     public DynamicPanel(bool selfIsHandle = true, params UIElement[] otherHandles)
     {
-        if (selfIsHandle)
+        if (SelfIsHandle = selfIsHandle)
             Handles = [this];
         else
             Handles = [];
@@ -39,7 +40,8 @@ public sealed class DynamicPanel : UIPanel
     }
     public override void MouseOver(UIMouseEvent evt)
     {
-        HoverPanel = this;
+        if (!resizing)
+            HoverPanel = this;
         base.MouseOver(evt);
     }
     public override void MouseOut(UIMouseEvent evt)
@@ -78,7 +80,12 @@ public sealed class DynamicPanel : UIPanel
         else if (normalized.Y > GetDimensions().Height - resizeSpace)
             dir |= ResizeDirection.Down;
     }
-
+    public void ResetHandles()
+    {
+        Handles.Clear();
+        if (SelfIsHandle)
+            Handles.Add(this);
+    }
     private void DragStart(UIMouseEvent evt)
     {
         CalculatedStyle innerDimensions = GetInnerDimensions();
@@ -98,11 +105,7 @@ public sealed class DynamicPanel : UIPanel
 
     private void DragEnd(UIMouseEvent evt)
     {
-        if (Handles.Contains(this))
-        {
-            dragging = false;
-            resizing = false;
-        }
+        dragging = resizing = false;
     }
 
     protected override void DrawSelf(SpriteBatch spriteBatch)
