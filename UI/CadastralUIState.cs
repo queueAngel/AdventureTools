@@ -173,8 +173,6 @@ public sealed class CadastralUIState : UIState
                 var cha = new UICharacter(WorldNPC.Dummy, true) { HAlign = 1f, MinWidth = StyleDimension.FromPixels(64f), MinHeight = StyleDimension.FromPixels(54f) };
                 cha.OnDraw += static _ =>
                 {
-                    savedEngine = Lighting._activeEngine;
-                    Lighting._activeEngine = FullbrightEngine.Instance;
                     var d = WorldNPC.Dummy;
                     d.direction = 1;
                     WorldNPC.PrintOnDummy(SchemaVal.AnalyzingSchema);
@@ -367,7 +365,6 @@ public sealed class CadastralUIState : UIState
     }
     internal static JsonObject AppearanceNode;
     internal static string CurrentColorPick;
-    internal static ILightingEngine savedEngine;
     public sealed class FullbrightEngine : ILightingEngine
     {
         public static readonly FullbrightEngine Instance = new();
@@ -475,7 +472,6 @@ public sealed class CadastralUIState : UIState
                 foreach (var el in EquipLoader.EquipTypes.Select(static t =>
                     new EquipPicker
                     {
-                        OverflowHidden = true,
                         Dummy = WorldNPC.Dummy,
                         All = true,
                         Type = t,
@@ -766,15 +762,16 @@ public sealed class CadastralUIState : UIState
     }
     public override void Draw(SpriteBatch spriteBatch)
     {
+        /*
         spriteBatch.End(out var ss);
         spriteBatch.Begin(ss with { SamplerState = SamplerState.PointClamp });
+        */
+        ref var engine = ref Lighting._activeEngine;
+        var oldEngine = engine;
+        engine = FullbrightEngine.Instance;
         base.Draw(spriteBatch);
-        spriteBatch.Restart(ss);
-        if (savedEngine != null)
-        {
-            Lighting._activeEngine = savedEngine;
-            savedEngine = null;
-        }
+        engine = oldEngine;
+        // spriteBatch.Restart(ss);
     }
 }
 

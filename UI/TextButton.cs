@@ -13,7 +13,10 @@ namespace AdventureTools.UI;
 
 public sealed class TextButton : UIElement
 {
-    private static readonly Asset<Texture2D> _prButtonTex = ModContent.Request<Texture2D>(nameof(AdventureTools) + "/PRButton");
+    private const string _texPath = nameof(AdventureTools) + "/PRButton";
+    public static readonly Asset<Texture2D> Texture = ModContent.Request<Texture2D>(_texPath);
+    public static readonly Asset<Texture2D> HighlightTex = ModContent.Request<Texture2D>(_texPath + "_Highlight");
+    public static readonly Asset<Texture2D> BorderTex = ModContent.Request<Texture2D>(_texPath + "_Border");
     public Asset<Texture2D> Image;
     public Rectangle? ImageFrame;
     public Vector2 ImageOffset;
@@ -30,7 +33,7 @@ public sealed class TextButton : UIElement
     {
         var dims = GetDimensions();
         var color = IsMouseHovering ? Color.White : new Color(180, 180, 180);
-        DrawUtils.Draw9Slice(spriteBatch, _prButtonTex.Value, dims.ToRectangle(), col: color);
+        DrawUtils.Draw9Slice(spriteBatch, Texture.Value, dims.ToRectangle(), col: color);
         var f = FontAssets.ItemStack.Value;
         var s = Vector2.One;
         var t = Text?.ToString();
