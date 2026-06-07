@@ -62,3 +62,21 @@ PlayerVariantNames: {
 	Dress: Dress
 	DisplayDoll: Doll
 }
+
+EquipType: {
+	Head: Headwear
+	Body: Top
+	Legs: Legwear
+	HandsOn: Front Hand
+	HandsOff: Back Hand
+	Back: Back
+	Front: Overcoat
+	Shoes: Footwear
+	Waist: Waist
+	Wings: Wings
+	Shield: Shield
+	Neck: Neckwear
+	Face: Facewear
+	Balloon: Balloon
+	Beard: Beard
+}

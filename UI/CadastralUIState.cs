@@ -410,6 +410,7 @@ public sealed class CadastralUIState : UIState
                     but.OnLeftMouseDown += static (_, e) => AppearanceNode?["Hair"] = ((UIHairStyleButton)e).HairStyleId;
                     return but;
                 }));
+                grid.RecalculateElements();
                 break;
             case SubPanelScr.HairDye:
                 grid = new DynamicGrid()
@@ -432,6 +433,7 @@ public sealed class CadastralUIState : UIState
                     return new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy);
                 }));
                 panel.Recalculate();
+                grid.RecalculateElements();
                 break;
             case SubPanelScr.Style:
                 grid = new DynamicGrid()
@@ -452,39 +454,33 @@ public sealed class CadastralUIState : UIState
                 {
                     return new VariantDisplay(i, WorldNPC.Dummy);
                 }));
+                grid.RecalculateElements();
                 break;
             case SubPanelScr.Accessories:
-                var list = new UIList() { Height = StyleDimension.Fill, Width = StyleDimension.Fill };
-                /*
-                list.AddRange(EquipLoader.EquipTypes.Select(static t => 
-                    new EquipPicker 
-                    { 
-                        Dummy = WorldNPC.Dummy,
-                        All = true,
-                        Type = t,
-                        Width = StyleDimension.FromPercent(0.99f),
-                        Height = StyleDimension.FromPixels(32f),
-                        ButtonHeight = StyleDimension.FromPixels(32f),
-                        MenuHeight = StyleDimension.FromPixels(256f)
-                    }
-                ));
-                */
-                foreach (var el in EquipLoader.EquipTypes.Select(static t =>
-                    new EquipPicker
+                var list = new UIList() { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
+                var scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
+                panel.Append(scrollBar);
+                var types = EquipLoader.EquipTypes;
+                var h = StyleDimension.FromPixels(42f);
+                for (int i = 0; i < types.Length; i++)
+                {
+                    list.Add(new EquipPicker
                     {
+                        ScrollBarAttachedToList = scrollBar,
                         Dummy = WorldNPC.Dummy,
-                        All = true,
-                        Type = t,
-                        Width = StyleDimension.FromPercent(0.995f),
-                        Height = StyleDimension.FromPixels(42f),
-                        ButtonHeight = StyleDimension.FromPixels(42f),
-                        MenuHeight = StyleDimension.FromPixels(256f)
-                    }))
-                    list.Add(el);
+                        Type = types[i],
+                        Width = StyleDimension.Fill,
+                        Height = h,
+                        ButtonHeight = h,
+                        MenuHeight = StyleDimension.FromPixels(EquipPicker.HEIGHT * 4f)
+                    });
+                }
+                scrollBar.SetView(100f, h.Pixels * types.Length);
+                list.SetScrollbar(scrollBar);
                 panel.Handles.Add(list._innerList);
                 panel.Append(list);
-                panel.Width.Pixels = 32f * 8f;
-                panel.Height.Pixels = 32f * 12f;
+                panel.Width.Pixels = 32f * 12f;
+                panel.Height.Pixels = 32f * 14f;
                 break;
         }
         Append(panel);

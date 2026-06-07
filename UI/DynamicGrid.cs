@@ -30,19 +30,20 @@ public sealed class DynamicGrid : UIElement
     public void RecalculateElements()
     {
         var calcWidth = ElementWidth + XSpacing;
-        // var fitInRow = (int)((_dimensions.Width - XSpacing) / calcWidth);
-        var curTop = 0f;
-        var curLeft = 0f;
+        var fitInRow = (int)(_dimensions.Width / calcWidth);
+        var finalWidth = fitInRow * calcWidth;
+        var xAdjust = (_dimensions.Width - finalWidth) * 0.5f;
+        var x = 0;
+        var y = 0;
         foreach (var element in CollectionsMarshal.AsSpan(Elements))
         {
-            if (curLeft + ElementWidth >= _dimensions.Width)
+            element.Left.Pixels = x * calcWidth + xAdjust;
+            element.Top.Pixels = y * (ElementHeight + YSpacing);
+            if (++x == fitInRow)
             {
-                curLeft = 0f;
-                curTop += ElementHeight + YSpacing;
+                x = 0;
+                y++;
             }
-            element.Left.Pixels = curLeft;
-            element.Top.Pixels = curTop;
-            curLeft += calcWidth;
         }
     }
     public void Add(UIElement element)

@@ -8,9 +8,12 @@ namespace AdventureTools.Utilities;
 public static class Extensions
 {
     public static CustomBiomePlayer Biomes(this Player p) => p.GetModPlayer<CustomBiomePlayer>();
+    public static CalculatedStyle ToDims(this Rectangle r) => new(r.X, r.Y, r.Width, r.Height);
     extension(StyleDimension)
     {
         public static StyleDimension Half => StyleDimension.FromPercent(0.5f);
+        public static StyleDimension operator +(StyleDimension a, float b) => new(a.Pixels + b, a.Percent);
+        public static StyleDimension operator -(StyleDimension a, float b) => new(a.Pixels - b, a.Percent);
     }
     extension(CalculatedStyle self)
     {

@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AdventureTools.UI;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using ReLogic.Content;
+using System.Security.Cryptography;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
@@ -70,5 +73,23 @@ public static class DrawUtils
         var position = vector;
 
         Terraria.ModLoader.Config.UI.ConfigElement.DrawPanel2(sb, position, TextureAssets.SettingsPanel.Value, num, dimensions.Height, color);
+    }
+    public static readonly Asset<Texture2D> ToggleTexture = Main.Assets.Request<Texture2D>("Images/UI/Settings_Toggle");
+    public static void DrawCoolToggle(SpriteBatch sB, in CalculatedStyle dimensions, ref float anim, bool value, float xOffset = -10f)
+    {
+        var tex = ToggleTexture.Value;
+        var sourceRectangle = new Rectangle(0, 0, tex.Width / 2, tex.Height);
+        var sourceFull = sourceRectangle;
+        sourceFull.X += sourceFull.Width + 1;
+        sourceFull.Width -= 1;
+        var drawPosition = new Vector2(dimensions.X + dimensions.Width - sourceRectangle.Width + xOffset, dimensions.Y + dimensions.Height * 0.5f);
+        var b = Color.Black * 0.9f;
+        sB.Draw(tex, drawPosition, new Rectangle(sourceFull.X, 0, 8, sourceFull.Height), b, 0f, new Vector2(16f, sourceFull.Height * 0.5f), 1, 0, 0);
+        sB.Draw(tex, drawPosition, new Rectangle(sourceFull.X + 6, 0, 2, sourceFull.Height), b, 0f, new Vector2(1f, sourceFull.Height * 0.5f), new Vector2(8f, 1f), 0, 0);
+        sB.Draw(tex, drawPosition, new Rectangle(sourceFull.X + 5, 0, 9, sourceFull.Height), b, 0f, new Vector2(-6f, sourceFull.Height * 0.5f), 1, 0, 0);
+
+        anim = float.Lerp(anim, value ? 1f : 0f, 0.25f);
+        var useRect = value ? sourceFull : sourceRectangle;
+        sB.Draw(tex, drawPosition + new Vector2((anim * 2f - 1f) * 8f, 0f), useRect, Color.White, 0f, new Vector2(useRect.Width * 0.5f, useRect.Height * 0.5f), Vector2.One, SpriteEffects.None, 0f);
     }
 }
