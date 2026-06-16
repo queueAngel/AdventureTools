@@ -8,6 +8,7 @@ using ReLogic.Content;
 using ReLogic.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.GameContent.UI.Elements;
@@ -44,6 +45,7 @@ public sealed class EquipPicker : UIElement
     [ModSystemHooks.PostSetupContent]
     public static void InitDyesList()
     {
+        Dyes.Add(ItemID.None);
         foreach (var item in ContentSamples.ItemsByType.Values)
             if (item.dye > 0)
                 Dyes.Add(item.type);
@@ -163,7 +165,10 @@ public sealed class EquipPicker : UIElement
         var nodeName = Type.ToString() + (DyeMenu ? "Dye" : string.Empty);
         if (HideDyes)
             dye = 0;
-        foreach (var slot in DyeMenu ? (IEnumerable<int>)Dyes : search._idToName.Keys)
+        var slots = (IEnumerable<int>)search._idToName.Keys;
+        if (!search._idToName.ContainsKey(0))
+            slots = Enumerable.Repeat(0, 1).Concat(slots);
+        foreach (var slot in DyeMenu ? Dyes : slots)
         {
             var pos = gridTl + new Vector2(x * _width + xAdjust, (y + _smoothScroll) * HEIGHT);
             if (pos.Y + 2f < _gridSpace.Bottom && pos.Y + HEIGHT - 2f > _gridSpace.Top)
@@ -181,7 +186,12 @@ public sealed class EquipPicker : UIElement
                 if (rect.Contains(Main.mouseX, Main.mouseY))
                 {
                     if (Main.mouseLeft && Main.mouseLeftRelease)
-                        CadastralUIState.AppearanceNode[nodeName] = search.GetName(slot);
+                    {
+                        if (slot == 0)
+                            CadastralUIState.AppearanceNode.Remove(nodeName);
+                        else
+                            CadastralUIState.AppearanceNode[nodeName] = search.GetName(slot);
+                    }
                     DrawUtils.Draw9Slice(spriteBatch, TextButton.BorderTex.Value, rect, Color.White);
                     spriteBatch.FlushBatch();
                 }

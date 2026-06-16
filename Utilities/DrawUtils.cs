@@ -65,7 +65,7 @@ public static class DrawUtils
     public static void DrawConfigPanel(this UIElement elem, SpriteBatch sb, out CalculatedStyle dimensions)
     {
         dimensions = elem.GetDimensions();
-        var num = dimensions.Width + 1f;
+        var num = dimensions.Width;
         var vector = new Vector2(dimensions.X, dimensions.Y);
         var color = UICommon.DefaultUIBlue;
         if (!elem.IsMouseHovering)

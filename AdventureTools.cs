@@ -109,7 +109,7 @@ public sealed class BiomeSystem : ModSystem
 		{
 			var a = CadastralUIState._selectStart;
 			var b = CadastralUIState._selectEnd;
-			if (a.DistanceSQ(b) >= 64f)
+			if (a.DistanceSQ(b) >= CadastralUIState.SHORT_SELECTION)
 			{
                 var rect = GeometryUtils.RectangleFromPoints(a - Main.screenPosition, b - Main.screenPosition);
                 var tex = _selectBox.Value;
@@ -255,8 +255,13 @@ public sealed class CustomBiomeScene : ModSceneEffect
 		get
 		{
 			if (Main.LocalPlayer.Biomes().CurrentBiomeData.TryGetPropertyValue("Music", out var musicNode))
-				if (MusicID.Search.TryGetId((string)musicNode, out var id))
-					return id;
+			{
+				var trackName = (string)musicNode;
+				if (trackName == "None")
+					return 0;
+                if (MusicID.Search.TryGetId((string)musicNode, out var id))
+                    return id;
+            }
 			return -1;
         }
 	}

@@ -51,6 +51,15 @@ Panel: {
 	MultipleSelected: Multiple objects are selected:
 }
 
+SecondPanel: {
+	Hair: Choose Hairstyle
+	HairDye: Choose Hair Dye
+	Style: Choose Clothing Style
+	Accessories: Equipment Editor
+	Dialogue: Dialogue Editor
+	Shop: Shop Editor
+}
+
 ConfigCategory.CustomBiomesConfig.Description: CustomBiomesConfig
 
 // Vanilla doesn't have names for these, because it never displays them

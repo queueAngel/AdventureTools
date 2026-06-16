@@ -59,7 +59,9 @@ public enum SubPanelScr
     Style,
     Accessories,
     Dialogue,
-    Chat
+    Shop,
+    Music,
+    SurfaceBg,
 }
 public sealed class CadastralUIState : UIState
 {
@@ -143,18 +145,35 @@ public sealed class CadastralUIState : UIState
                 break;
             case PanelScreen.Biome:
                 var selectedBiome = (CustomBiome)_selection.ElementAt(0);
-                AddLocalizedNode(selectedBiome.Schema["Name"]?.AsObject());
+                var schVal = new SchemaVal { BaseObject = selectedBiome, Height = new(32f, 0f), Width = StyleDimension.Fill };
+                List.Add(schVal);
+                schVal.Activate();
                 break;
             case PanelScreen.BiomeSchema:
                 var schema = SchemaVal.AnalyzingSchema;
+                // name
+                var name = new LocalizedTextElement() { BaseObject = schema?["Name"]?.AsObject(), Width = StyleDimension.Fill, Height = new(32f, 0f) };
+                List.Add(name);
+                name.Activate();
+                name.Default.Text = schema?["Name"]?["en-US"]?.ToString() ?? string.Empty;
+                // music
+                Main.instance.LoadItem(ItemID.MusicBox);
+                var musPicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.Music,
+                    Label = TextureAssets.Item[ItemID.MusicBox],
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(musPicker);
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
                 var wNPC = (WorldNPC)selectedNPC.ModNPC;
-                var panel = new UIElement() { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPercent(1f) }.WithPadding(16f);
-                var viewport = new WorldViewport() { targetCam = () => selectedNPC.Center, MinWidth = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
+                var panel = new UIElement { Height = StyleDimension.FromPixels(128f), Width = StyleDimension.FromPercent(1f) }.WithPadding(16f);
+                var viewport = new WorldViewport { targetCam = () => selectedNPC.Center, MinWidth = StyleDimension.FromPixels(96f), Height = StyleDimension.Fill };
                 var boolVal = new BoolVal<WorldNPC>(wNPC, w => w.Static, (w, b) => w.Static = b) { Label = wNPC.Mod.GetLocalization("SchemaUI.NPC.Static"), Left = StyleDimension.FromPixels(108f), Height = StyleDimension.FromPixelsAndPercent(-8f, 0.5f), Width = StyleDimension.FromPixelsAndPercent(-112f, 1f) };
-                var schVal = new SchemaVal() { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.Half};
+                schVal = new SchemaVal { BaseObject = wNPC, Left = boolVal.Left, Height = boolVal.Height, Width = boolVal.Width, Top = StyleDimension.Half };
                 panel.Append(viewport);
                 panel.Append(boolVal);
                 panel.Append(schVal);
@@ -209,7 +228,7 @@ public sealed class CadastralUIState : UIState
                 var labelLabel = Language.GetText("UI.PlayerNameSlot");
                 var labelLabelW = ChatManager.GetStringSize(FontAssets.MouseText.Value, labelLabel.Value, Vector2.One).X + 16f;
                 var subPanel = new UIElement() { Left = StyleDimension.FromPixels(labelLabelW), Width = StyleDimension.FromPixelsAndPercent(-(102f + labelLabelW), 1f), Height = StyleDimension.Fill };
-                var name = new LocalizedTextElement() { BaseObject = schema?["Name"]?.AsObject(), Width = StyleDimension.Fill, Height = StyleDimension.FromPercent(0.5f) };
+                name = new LocalizedTextElement() { BaseObject = schema?["Name"]?.AsObject(), Width = StyleDimension.Fill, Height = StyleDimension.FromPercent(0.5f) };
                 subPanel.Append(name);
                 name.Activate();
                 name.Default.Text = schema?["Name"]?["en-US"]?.ToString() ?? string.Empty;
@@ -375,23 +394,35 @@ public sealed class CadastralUIState : UIState
         public void Rebuild() { }
     }
     public static UIText SimpleLabel(LocalizedText t) => new(t) { Left = StyleDimension.FromPixels(10f), TextOriginX = 0f, TextOriginY = 0.5f, VAlign = 0.5f, MinWidth = StyleDimension.FromPixels(64f), MinHeight = StyleDimension.FromPixels(16f) };
-    public void AddLocalizedNode(JsonObject node)
-    {
-        List.Add(new LocalizedTextElement { BaseObject = node, Height = StyleDimension.FromPixels(32f) });
-    }
     public SubPanelScr OpenTo;
     public void OpenSecondPanel(SubPanelScr screen)
     {
         OpenTo = screen;
-        var panel = SecondaryPanel;
-        panel.RemoveAllChildren();
-        panel.ResetHandles();
+        var s = SecondaryPanel;
+        s.RemoveAllChildren();
+        s.ResetHandles();
+        var tHeight = 36f;
+        var title = new UIText(AdventureTools.Instance.GetLocalization("SecondPanel." + screen), 1f) { Width = StyleDimension.Fill, Height = new(tHeight, 0f), TextOriginX = 0.5f, TextOriginY = 0.3f };
+        var close = new UIImageButton(Main.Assets.Request<Texture2D>("Images/UI/SearchCancel")) { HAlign = 1f };
+        close.OnLeftClick += static (_, _) => Instance.SecondaryPanel.Remove();
+        var separator = new UIHorizontalSeparator
+        {
+            VAlign = 1f,
+            Width = StyleDimension.Fill,
+            Color = new Color(89, 116, 213, 255) * 0.9f
+        };
+        title.Append(separator);
+        title.Append(close);
+        var body = new UIElement { Top = new(tHeight, 0f), Height = StyleDimension.Fill - tHeight, Width = StyleDimension.Fill };
+        s.Append(title);
+        s.Append(body);
+        s.Handles.Add(title);
+        s.Handles.Add(body);
         switch (screen)
         {
             case SubPanelScr.Hair:
-                panel.Width.Pixels = 32f * 8f;
-                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
-                panel.Recalculate();
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
                 var grid = new DynamicGrid()
                 {
                     Width = StyleDimension.Fill,
@@ -402,8 +433,8 @@ public sealed class CadastralUIState : UIState
                     ElementHeight = 44f,
                     OverflowHidden = true,
                 };
-                panel.Handles.Add(grid);
-                panel.Append(grid);
+                s.Handles.Add(grid);
+                body.Append(grid);
                 grid.Add(Enumerable.Range(0, HairLoader.Count - 1).Select(static i =>
                 {
                     var but = new UIHairStyleButton(WorldNPC.Dummy, i);
@@ -423,16 +454,16 @@ public sealed class CadastralUIState : UIState
                     ElementHeight = 50f,
                     OverflowHidden = true,
                 };
-                panel.Handles.Add(grid);
-                panel.Append(grid);
-                panel.Width.Pixels = 32f * 8f;
-                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
+                s.Handles.Add(grid);
+                body.Append(grid);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
                 grid.Add(new HairDyeDisplay(ContentSamples.ItemsByType[ItemID.HairDyeRemover], WorldNPC.Dummy));
                 grid.Add(Enumerable.Range(0, ItemLoader.ItemCount - 1).Where(static i => ContentSamples.ItemsByType[i].hairDye != -1 && i != ItemID.HairDyeRemover).Select(static i =>
                 {
                     return new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy);
                 }));
-                panel.Recalculate();
+                s.Recalculate();
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Style:
@@ -446,10 +477,10 @@ public sealed class CadastralUIState : UIState
                     ElementHeight = 82f,
                     OverflowHidden = true,
                 };
-                panel.Handles.Add(grid);
-                panel.Append(grid);
-                panel.Width.Pixels = 32f * 8f;
-                panel.Height.Pixels = panel.Width.Pixels * 1.25f;
+                s.Handles.Add(grid);
+                body.Append(grid);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
                 grid.Add(Enumerable.Range(0, PlayerVariantID.Count - 1).Where(static i => PlayerVariantID.Sets.Male[i]).Select(static i =>
                 {
                     return new VariantDisplay(i, WorldNPC.Dummy);
@@ -459,7 +490,7 @@ public sealed class CadastralUIState : UIState
             case SubPanelScr.Accessories:
                 var list = new UIList() { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
                 var scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
-                panel.Append(scrollBar);
+                body.Append(scrollBar);
                 var types = EquipLoader.EquipTypes;
                 var h = StyleDimension.FromPixels(42f);
                 for (int i = 0; i < types.Length; i++)
@@ -477,13 +508,35 @@ public sealed class CadastralUIState : UIState
                 }
                 scrollBar.SetView(100f, h.Pixels * types.Length);
                 list.SetScrollbar(scrollBar);
-                panel.Handles.Add(list._innerList);
-                panel.Append(list);
-                panel.Width.Pixels = 32f * 12f;
-                panel.Height.Pixels = 32f * 14f;
+                s.Handles.Add(list._innerList);
+                body.Append(list);
+                s.Width.Pixels = 32f * 12f;
+                s.Height.Pixels = 32f * 14f;
+                break;
+            case SubPanelScr.Music:
+                grid = new DynamicGrid()
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 82f,
+                    ElementHeight = 82f,
+                    OverflowHidden = true,
+                };
+                s.Handles.Add(grid);
+                body.Append(grid);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
+                grid.Add(Enumerable.Range(-1, MusicLoader.MusicCount - 1).Select(static i =>
+                {
+                    return new MusicBoxButton(i);
+                }));
+                s.Recalculate();
+                grid.RecalculateElements();
                 break;
         }
-        Append(panel);
+        Append(s);
     }
     public void ReinitializePanel(PanelScreen withScreen = 0)
     {
@@ -700,6 +753,7 @@ public sealed class CadastralUIState : UIState
             }
         }
     }
+    public const float SHORT_SELECTION = 16f;
     private static bool DoSelect()
     {
         var cleared = false;
@@ -710,7 +764,7 @@ public sealed class CadastralUIState : UIState
             cleared = true;
             _selection.Clear();
         }
-        var shortSelection = _selectStart.DistanceSQ(_selectEnd) < 64f;
+        var shortSelection = _selectStart.DistanceSQ(_selectEnd) < SHORT_SELECTION;
         var selectBox = GeometryUtils.RectangleFromPoints(_selectStart, _selectEnd);
         foreach (var npc in Main.ActiveNPCs)
         {

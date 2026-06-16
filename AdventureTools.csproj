@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Tomat.Terraria.ModLoader.Sdk/2.1.0">
 
 	<!-- Import tModLoader mod properties -->
 	<Import Project="..\tModLoader.targets" />
@@ -11,15 +11,15 @@
 	<ItemGroup>
 	  <PackageReference Include="JsonPatch.Net" Version="5.0.2" />
 	  <PackageReference Include="JsonPointer.Net" Version="7.0.1" />
-	  <PackageReference Include="JsonSchema.Net" Version="9.2.0" />
-	  <PackageReference Include="Krafs.Publicizer" Version="2.3.0">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
+	  <PackageReference Include="JsonSchema.Net" Version="9.2.2" />
+		<Publicize Include="tModLoader:Terraria.Utilities.UnifiedRandom.inext" />
+		<Publicize Include="tModLoader:Terraria.Utilities.UnifiedRandom.inextp" />
+		<Publicize Include="tModLoader:Terraria.Utilities.UnifiedRandom.SeedArray" />
 		<Publicize Include="tModLoader:Terraria.ModLoader.EquipLoader.GetSearch" />
 		<Publicize Include="tModLoader:Terraria.ModLoader.EquipLoader.slotToId" />
 		<Publicize Include="tModLoader:Terraria.GameContent.UI.Elements.UIList._innerList" />
 		<Publicize Include="tModLoader:Terraria.Lighting._activeEngine" />
+		<Publicize Include="tModLoader:Terraria.Audio.SoundEngine.IsAudioSupported" />
 		<Publicize Include="tModLoader:Terraria.GameContent.UI.Elements.UIColoredImageButton._color" />
 		<Publicize Include="tModLoader:Terraria.UI.UIElement.Parent" />
 		<Publicize Include="tModLoader:Terraria.UI.UIElement._dimensions" />
