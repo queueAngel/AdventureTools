@@ -6,8 +6,6 @@ using Terraria;
 using Terraria.Localization;
 using Terraria.UI;
 using Terraria.ID;
-using Terraria.ModLoader.UI;
-using System;
 
 namespace AdventureTools.UI;
 

@@ -5,6 +5,7 @@
 
 	<!-- General -->
 	<PropertyGroup>
+		<Nullable>disable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

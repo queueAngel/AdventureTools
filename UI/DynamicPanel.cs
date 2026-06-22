@@ -4,7 +4,6 @@ using Terraria;
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 using Daybreak.Common.UI;
-using System;
 using System.Collections.Generic;
 
 namespace AdventureTools.UI;

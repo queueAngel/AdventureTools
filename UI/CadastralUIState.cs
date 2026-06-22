@@ -1,24 +1,17 @@
 ﻿using AdventureTools.Items;
 using AdventureTools.Utilities;
 using AdventureTools.WorldNPCs;
-using Daybreak.Common.Features.Configuration;
-using Daybreak.Common.Rendering;
 using Daybreak.Common.UI;
-using Json.Pointer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.Cil;
 using ReLogic.Content;
 using ReLogic.OS;
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -62,6 +55,8 @@ public enum SubPanelScr
     Shop,
     Music,
     SurfaceBg,
+    UndergroundBg,
+    BiomeEffects,
 }
 public sealed class CadastralUIState : UIState
 {
@@ -166,6 +161,35 @@ public sealed class CadastralUIState : UIState
                     Height = new(32f, 0f),
                 };
                 List.Add(musPicker);
+                var sbgPicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.SurfaceBg,
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(sbgPicker);
+                var ubgPicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.UndergroundBg,
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(ubgPicker);
+                var effectsButton = new TextButton
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                    Text = mod.GetLocalization("SchemaUI.Biome.EffectsButton"),
+                    Action = () => OpenSecondPanel(SubPanelScr.BiomeEffects),
+                };
+                List.Add(effectsButton);
+                var brightSlider = new Slider
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(16f, 0f),
+                };
+                brightSlider.OnChanged += s => schema["Brightness"] = s.Ratio;
+                List.Add(brightSlider);
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
@@ -245,10 +269,10 @@ public sealed class CadastralUIState : UIState
                 subPanel.Append(shopButton);
 
                 // middle panel
-                var pickerPanel = new UIElement() { Height = StyleDimension.FromPixels(152f), Width = StyleDimension.Fill };
+                var pickerPanel = new UIElement() { Height = StyleDimension.FromPixels(178f), Width = StyleDimension.Fill };
 
-                // PROBABLY IL EDIT COLOR PICKER FOR CUSTOM GRAYED OUT LOOK WHEN INPUT IS DISABLED
-                var picker = new ColorPicker() { Width = StyleDimension.FromPixels(128f), Height = StyleDimension.Fill, IgnoresMouseInteraction = true };
+                var pickerWMenu = new ColorPickerWithHexMenu { Width = StyleDimension.FromPixels(128f), Height = StyleDimension.Fill, IgnoresMouseInteraction = true };
+                var picker = pickerWMenu.Picker;
                 picker.OnChanged += static self =>
                 {
                     if (AppearanceNode != null && CurrentColorPick != null)
@@ -272,7 +296,7 @@ public sealed class CadastralUIState : UIState
                 hair.Left = eye.Left = skin.Left = StyleDimension.FromPixels(px * 0.5f);
                 eye.Left.Pixels += px;
                 skin.Left.Pixels += px * 2f;
-                picker.Left.Pixels = px * 0.5f;
+                pickerWMenu.Left.Pixels = px * 0.5f;
 
                 var bottomPanel = new UIElement() { Height = StyleDimension.FromPixels(px * 2f), Width = StyleDimension.Fill };
 
@@ -313,7 +337,7 @@ public sealed class CadastralUIState : UIState
                 bottomPanel.Append(brButtons);
 
                 // pickers
-                var pickersLeft = new StyleDimension(picker.Width.Pixels + picker.Left.Pixels + 8f, picker.Width.Percent + picker.Left.Percent);
+                var pickersLeft = new StyleDimension(pickerWMenu.Width.Pixels + pickerWMenu.Left.Pixels + 8f, pickerWMenu.Width.Percent + pickerWMenu.Left.Percent);
                 var pickersWidth = new StyleDimension(-pickersLeft.Pixels - 8f, 1f);
                 var pickersHeight = StyleDimension.FromPercent(1f / 3f);
                 var hairStylePicker = new IDPicker
@@ -349,7 +373,7 @@ public sealed class CadastralUIState : UIState
                 };
                 pickerPanel.Append(stylePicker);
 
-                pickerPanel.Append(picker);
+                pickerPanel.Append(pickerWMenu);
 
                 // VOICE PICKER SHOULD GO HERE
                 // 1.4.5 SEPARATES VOICE INTO VARIANT (WHICH IS SAVED AND INHERENT TO THE CHARACTER) AND OVERRIDE (WHICH COMES FROM ITEMS AND OTHER EFFECTS)
@@ -370,6 +394,7 @@ public sealed class CadastralUIState : UIState
         elem.OnLeftMouseDown += (_, _) =>
         {
             picker.IgnoresMouseInteraction = false;
+            picker.Parent?.IgnoresMouseInteraction = false;
             CurrentColorPick = pick;
             picker.Color = elem._color;
             _lastPicked?.SetSelected(false);
@@ -520,7 +545,7 @@ public sealed class CadastralUIState : UIState
                     Height = StyleDimension.Fill,
                     XSpacing = 4f,
                     YSpacing = 4f,
-                    ElementWidth = 82f,
+                    ElementWidth = 96f,
                     ElementHeight = 82f,
                     OverflowHidden = true,
                 };

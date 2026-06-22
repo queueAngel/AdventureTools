@@ -302,7 +302,16 @@ public sealed class CustomBiomeBackground : GlobalBackgroundStyle
     }
     public override void ChooseUndergroundBackgroundStyle(ref int style)
     {
-        
+        var biomeData = Main.LocalPlayer.Biomes().PreviousBiomeData;
+        if (biomeData is null)
+            return;
+        if (biomeData.TryGetPropertyValue("UndergroundBackground", out var sbNode))
+        {
+			if (sbNode.GetValueKind() == JsonValueKind.Number)
+				style = (int)sbNode;
+			else if (ModContent.TryFind((string)sbNode, out ModUndergroundBackgroundStyle moddedBg))
+				style = moddedBg.Slot;
+        }
     }
 }
 public sealed class CustomBiomeSpawns : GlobalNPC
@@ -376,40 +385,6 @@ public enum RoundingType : byte
 	Round,
 	Ceiling,
 }
-public struct ScalingModule
-{
-	public RoundingType Rounding;
-	public IntManipulator Health;
-	public IntManipulator Defense;
-	public IntManipulator Damage;
-	public static ScalingModule FromJson(JsonObject root, string property)
-	{
-		if (!root.TryGetPropertyValue(property, out var j))
-			return default;
-		var json = j.AsObject();
-		var rounding = RoundingType.None;
-		if (json.TryGetPropertyValue("Rounding", out var roundProp))
-			rounding = Enum.Parse<RoundingType>((string)roundProp);
-		var health = IntManipulator.FromJson(json, "Health");
-		var defense = IntManipulator.FromJson(json, "Defense");
-		var damage = IntManipulator.FromJson(json, "Damage");
-		return new ScalingModule
-		{
-			Rounding = rounding,
-			Health = health,
-			Defense = defense,
-			Damage = damage,
-		};
-	}
-	public static int Round(float value, RoundingType type) => type switch
-	{
-		RoundingType.None => (int)value,
-		RoundingType.Floor => (int)MathF.Floor(value),
-		RoundingType.Round => (int)MathF.Round(value),
-		RoundingType.Ceiling => (int)MathF.Ceiling(value),
-		_ => throw null,
-	};
-}
 public struct IntManipulator
 {
 	public float? PreAdd;
@@ -451,36 +426,8 @@ public struct IntManipulator
 			val *= Multiply.Value;
 		if (Add.HasValue)
 			val += Add.Value;
-		return ScalingModule.Round(val, rounding);
+		return SchemaUtils.Round(val, rounding);
 	}
-}
-public sealed class CustomBiomeData
-{
-    public string[] Filters;
-	public int UndergroundBackground;
-	public ScalingModule GlobalScaling;
-	public IntManipulator MaxSpawns;
-	public IntManipulator SpawnRate;
-	public static CustomBiomeData FromJson(JsonObject json)
-	{
-		var scaling = ScalingModule.FromJson(json, "Scaling");
-		var spawnRate = IntManipulator.FromJson(json, "SpawnRate");
-		var maxSpawns = IntManipulator.FromJson(json, "MaxSpawns");
-
-		return new CustomBiomeData
-		{
-			GlobalScaling = scaling,
-			SpawnRate = spawnRate,
-			MaxSpawns = maxSpawns,
-		};
-	}
-}
-public struct CustomSpawnRule
-{
-	public int ID;
-	public float Chance;
-	public int Tile;
-	public ScalingModule Scaling;
 }
 public sealed class CustomBiome
 {

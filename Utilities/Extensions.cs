@@ -11,6 +11,7 @@ public static class Extensions
     public static CalculatedStyle ToDims(this Rectangle r) => new(r.X, r.Y, r.Width, r.Height);
     extension(StyleDimension)
     {
+        public static StyleDimension Third => StyleDimension.FromPercent(1f / 3f);
         public static StyleDimension Half => StyleDimension.FromPercent(0.5f);
         public static StyleDimension operator +(StyleDimension a, float b) => new(a.Pixels + b, a.Percent);
         public static StyleDimension operator -(StyleDimension a, float b) => new(a.Pixels - b, a.Percent);

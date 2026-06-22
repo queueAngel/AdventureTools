@@ -30,6 +30,6 @@ technique Technique1
 {
     pass ShaderPass
     {
-        PixelShader = compile ps_2_0 Outline();
+        PixelShader = compile ps_3_0 Outline();
     }
 }

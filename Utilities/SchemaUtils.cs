@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Terraria.Localization;
@@ -30,8 +31,20 @@ public static class SchemaUtils
             return null;
         if (!a.TryGetPropertyValue(property, out var propNode))
             return null;
-        if (!int.TryParse((string)propNode, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var result))
+        return Hex((string)propNode);
+    }
+    public static Color? Hex(string hex)
+    {
+        if (!int.TryParse(hex.StartsWith('#') ? hex.AsSpan()[1..] : hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var result))
             return null;
         return new Color((result >> 16) & 0xFF, (result >> 8) & 0xFF, result & 0xFF);
     }
+    public static int Round(float value, RoundingType type) => type switch
+    {
+        RoundingType.None => (int)value,
+        RoundingType.Floor => (int)MathF.Floor(value),
+        RoundingType.Round => (int)MathF.Round(value),
+        RoundingType.Ceiling => (int)MathF.Ceiling(value),
+        _ => throw null,
+    };
 }

@@ -9,8 +9,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.GameContent;
-using Terraria.GameContent.Events;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;

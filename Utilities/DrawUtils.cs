@@ -1,9 +1,6 @@
-﻿using AdventureTools.UI;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json.Linq;
 using ReLogic.Content;
-using System.Security.Cryptography;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
@@ -15,6 +12,7 @@ namespace AdventureTools.Utilities;
 public static class DrawUtils
 {
     public static readonly Asset<Effect> OutlineShader = ModContent.Request<Effect>(nameof(AdventureTools) + "/Shaders/Outline", AssetRequestMode.ImmediateLoad);
+    public static readonly Asset<Effect> GrayScaleShader = ModContent.Request<Effect>(nameof(AdventureTools) + "/Shaders/GrayScale", AssetRequestMode.ImmediateLoad);
     public static VertexPositionColor[] DrawPolygon(UPoint16[] poly, Color color)
     {
         var vertices = new VertexPositionColor[poly.Length];
