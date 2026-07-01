@@ -18,6 +18,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.UI.Chat;
 using Terraria.GameContent.UI.Elements;
+using Terraria.Graphics.Effects;
 using Terraria.Graphics.Light;
 using Terraria.ID;
 using Terraria.Localization;
@@ -57,6 +58,9 @@ public enum SubPanelScr
     SurfaceBg,
     UndergroundBg,
     BiomeEffects,
+    Buffs,
+    Mount,
+    Spawns,
 }
 public sealed class CadastralUIState : UIState
 {
@@ -70,6 +74,7 @@ public sealed class CadastralUIState : UIState
     {
         Width = StyleDimension.Fill,
         Height = StyleDimension.Fill,
+        ManualSortMethod = _ => { }
     };
     public UIText Title = new(string.Empty, 0.7f, true) { HAlign = 0.5f };
     public UIHorizontalSeparator Separator = new()
@@ -145,7 +150,9 @@ public sealed class CadastralUIState : UIState
                 schVal.Activate();
                 break;
             case PanelScreen.BiomeSchema:
+                CurrentColorPick = null;
                 var schema = SchemaVal.AnalyzingSchema;
+                AppearanceNode = schema;
                 // name
                 var name = new LocalizedTextElement() { BaseObject = schema?["Name"]?.AsObject(), Width = StyleDimension.Fill, Height = new(32f, 0f) };
                 List.Add(name);
@@ -190,6 +197,82 @@ public sealed class CadastralUIState : UIState
                 };
                 brightSlider.OnChanged += s => schema["Brightness"] = s.Ratio;
                 List.Add(brightSlider);
+                var pickerWMenu = new ColorPickerWithHexMenu { Height = StyleDimension.FromPixels(178f), Width = StyleDimension.Fill, IgnoresMouseInteraction = true };
+                var picker = pickerWMenu.Picker;
+                picker.OnChanged += static self =>
+                {
+                    if (AppearanceNode != null && CurrentColorPick != null)
+                        AppearanceNode[CurrentColorPick] = self.Color.Hex3();
+                };
+                List.Add(pickerWMenu);
+                var light = new TextButton { Width = StyleDimension.Fill, Height = new(32f, 0f), Text = mod.GetLocalization("SchemaUI.Biome.LightColorButton"), Action = () =>
+                {
+                    CurrentColorPick = "LightColor";
+                    pickerWMenu.IgnoresMouseInteraction = false;
+                    var pickColor = SchemaUtils.Hex(AppearanceNode, CurrentColorPick);
+                    if (pickColor.HasValue)
+                        picker.Color = pickColor.Value;
+                }};
+                var backgroundLight = new TextButton { Width = StyleDimension.Fill, Height = new(32f, 0f), Text = mod.GetLocalization("SchemaUI.Biome.BackgroundLightColorButton"), Action = () =>
+                {
+                    CurrentColorPick = "BackgroundLightColor";
+                    pickerWMenu.IgnoresMouseInteraction = false;
+                    var pickColor = SchemaUtils.Hex(AppearanceNode, CurrentColorPick);
+                    if (pickColor.HasValue)
+                        picker.Color = pickColor.Value;
+                }};
+                List.Add(light);
+                List.Add(backgroundLight);
+                var buffsButton = new TextButton
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                    Text = mod.GetLocalization("SchemaUI.Biome.BuffsButton"),
+                    Action = () => OpenSecondPanel(SubPanelScr.Buffs)
+                };
+                List.Add(buffsButton);
+                var t = TextureAssets.Extra[ExtrasID.EquipIcons];
+                var mountPicker = new IDPicker
+                {
+                    OpenTo = SubPanelScr.Mount,
+                    Label = t,
+                    Frame = t.Frame(3, 6, 1, 4), // change vertical frames to 7 in 1.4.5
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(mountPicker);
+                var globalScaling = new ScalingModule(schema, "Scaling")
+                { 
+                    Width = StyleDimension.Fill,
+                    Height = new(180f, 0f),
+                };
+                List.Add(globalScaling);
+                var spawnRate = new IntModifierModule(schema, "SpawnRate")
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(spawnRate);
+                var maxSpawns = new IntModifierModule(schema, "MaxSpawns")
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(maxSpawns);
+                var vanillaWeight = new IntModifierModule(schema, "VanillaSpawnWeight")
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                };
+                List.Add(vanillaWeight);
+                var spawnsButton = new TextButton
+                {
+                    Width = StyleDimension.Fill,
+                    Height = new(32f, 0f),
+                    Text = mod.GetLocalization("SchemaUI.Biome.SpawnsButton"),
+                    Action = () => OpenSecondPanel(SubPanelScr.Spawns)
+                };
+                List.Add(spawnsButton);
                 break;
             case PanelScreen.NPC:
                 var selectedNPC = (NPC)_selection.ElementAt(0);
@@ -271,8 +354,8 @@ public sealed class CadastralUIState : UIState
                 // middle panel
                 var pickerPanel = new UIElement() { Height = StyleDimension.FromPixels(178f), Width = StyleDimension.Fill };
 
-                var pickerWMenu = new ColorPickerWithHexMenu { Width = StyleDimension.FromPixels(128f), Height = StyleDimension.Fill, IgnoresMouseInteraction = true };
-                var picker = pickerWMenu.Picker;
+                pickerWMenu = new ColorPickerWithHexMenu { Width = StyleDimension.FromPixels(128f), Height = StyleDimension.Fill, IgnoresMouseInteraction = true };
+                picker = pickerWMenu.Picker;
                 picker.OnChanged += static self =>
                 {
                     if (AppearanceNode != null && CurrentColorPick != null)
@@ -553,12 +636,82 @@ public sealed class CadastralUIState : UIState
                 body.Append(grid);
                 s.Width.Pixels = 32f * 8f;
                 s.Height.Pixels = s.Width.Pixels * 1.25f;
-                grid.Add(Enumerable.Range(-1, MusicLoader.MusicCount - 1).Select(static i =>
-                {
-                    return new MusicBoxButton(i);
-                }));
+                grid.Add(Enumerable.Range(-1, MusicLoader.MusicCount).Select(static i => new MusicBoxButton(i)));
                 s.Recalculate();
                 grid.RecalculateElements();
+                break;
+            case SubPanelScr.BiomeEffects:
+                var panel = new UIElement { Width = StyleDimension.Fill, Height = new(48f, 0f) };
+                grid = new DynamicGrid
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill - panel.Height.Pixels,
+                    VAlign = 1f,
+                    ElementHeight = 48f,
+                    ElementWidth = 176f,
+                };
+                AddButton(0, "Skies", SkyManager.Instance);
+                AddButton(1, "Filters", Filters.Scene);
+                AddButton(2, "Overlays", Overlays.Scene);
+                void AddButton<T>(int pos, string effect, EffectManager<T> manager) where T : GameEffect
+                {
+                    panel.Append(new TextButton
+                    {
+                        Width = StyleDimension.Third,
+                        Left = StyleDimension.Third * pos,
+                        Height = StyleDimension.Fill,
+                        Text = AdventureTools.Instance.GetLocalization($"SecondPanel.{effect}Button"),
+                        Action = () =>
+                        {
+                            grid.RemoveAllChildren();
+                            var fx = manager._effects;
+                            grid.Add(Enumerable.Range(0, fx.Count - 1).Select(i => new EffectButton<T>(effect, fx.ElementAt(i).Key, manager)));
+                            grid.Recalculate();
+                            grid.RecalculateElements();
+                        }
+                    });
+                }
+                body.Append(grid);
+                body.Append(panel);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
+                break;
+            case SubPanelScr.Buffs:
+                s.MinHeight.Pixels = s.MinWidth.Pixels = 32f * 8f;
+                grid = new DynamicGrid
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    VAlign = 1f,
+                    ElementHeight = 32f,
+                    ElementWidth = 32f,
+                    OverflowHidden = true
+                };
+                body.Append(grid);
+                body.Recalculate();
+                grid.Add(Enumerable.Range(1, BuffLoader.BuffCount - 2).Where(static i => !Mount.mounts.Any(m => m.buff == i || m.extraBuff == i)).Select(static i => new BuffButton { BuffType = i }));
+                grid.RecalculateElements();
+                break;
+            case SubPanelScr.Mount:
+                grid = new DynamicGrid()
+                {
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 96f,
+                    ElementHeight = 82f,
+                    OverflowHidden = true,
+                };
+                s.Handles.Add(grid);
+                body.Append(grid);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
+                grid.Add(Enumerable.Range(-1, MountLoader.MountCount).Select(static i => new MountDisplay(i, Main.LocalPlayer)));
+                s.Recalculate();
+                grid.RecalculateElements();
+                break;
+            case SubPanelScr.Spawns:
                 break;
         }
         Append(s);

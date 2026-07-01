@@ -29,6 +29,7 @@
 		<Publicize Include="tModLoader:Terraria.UI.UIElement.GetDimensionsBasedOnParentDimensions" />
 		<Publicize Include="tModLoader:Terraria.UI.UIElement.OverflowHiddenRasterizerState" />
 		<Publicize Include="Daybreak:Daybreak.Common.UI.InputField.lastText" />
+		<Publicize Include="Daybreak:Daybreak.Common.UI.InputField.currentlyWriting" />
 		<Publicize Include="Daybreak:Daybreak.Common.UI.MarqueeText`1.textScale" />
 		<Publicize Include="Daybreak:Daybreak.Content.UI.SearchBar" />
 		<Publicize Include="FNA" />

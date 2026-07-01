@@ -34,6 +34,14 @@ SchemaUI: {
 		EditDialogue: Dialogue
 		EditShop: Edit Shop
 	}
+
+	Biome: {
+		EffectsButton: Visual Effects
+		LightColorButton: Foreground Light Color
+		BackgroundLightColorButton: Background Light Color
+		BuffsButton: Player Buffs & Debuffs
+		SpawnsButton: Spawn Pool
+	}
 }
 
 Panel: {
@@ -58,8 +66,14 @@ SecondPanel: {
 	Accessories: Equipment Editor
 	Dialogue: Dialogue Editor
 	Shop: Shop Editor
+	BiomeEffects: Choose Visual Effects
+	SkiesButton: Skies
+	FiltersButton: Filters
+	OverlaysButton: Overlays
+	Buffs: Choose Buffs
 }
 
+RoundingLabel: Rounding
 ConfigCategory.CustomBiomesConfig.Description: CustomBiomesConfig
 
 // Vanilla doesn't have names for these, because it never displays them
@@ -69,7 +83,6 @@ PlayerVariantNames: {
 	Gangster: Gangster
 	Coat: Coat
 	Dress: Dress
-	DisplayDoll: Doll
 }
 
 EquipType: {

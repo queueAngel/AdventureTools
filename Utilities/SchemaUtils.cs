@@ -6,6 +6,13 @@ using Terraria.Localization;
 
 namespace AdventureTools.Utilities;
 
+public enum RoundingType : byte
+{
+    None,
+    Floor,
+    Round,
+    Ceiling,
+}
 public static class SchemaUtils
 {
     public static bool TryGetLocalizedText(JsonNode json, out string text)
@@ -47,4 +54,22 @@ public static class SchemaUtils
         RoundingType.Ceiling => (int)MathF.Ceiling(value),
         _ => throw null,
     };
+    public static int Manipulate(int value, JsonNode manipulator, RoundingType rounding = 0)
+    {
+        if (manipulator is null)
+            return value;
+        if (manipulator is JsonValue jv)
+            return Round(value * (float)manipulator, rounding);
+        var m = manipulator.AsObject();
+        if (m.TryGetPropertyValue("Set", out var setProp))
+            return (int)setProp;
+        var val = (float)value;
+        if (m.TryGetPropertyValue("PreAdd", out var preAddProp))
+            val += (float)preAddProp;
+        if (m.TryGetPropertyValue("Multiply", out var multiplyProp))
+            val *= (float)multiplyProp;
+        if (m.TryGetPropertyValue("Add", out var addProp))
+            val += (float)addProp;
+        return Round(val, rounding);
+    }
 }

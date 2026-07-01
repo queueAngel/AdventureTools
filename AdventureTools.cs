@@ -378,57 +378,7 @@ public sealed class CustomBiomeSpawns : GlobalNPC
 		*/
     }
 }
-public enum RoundingType : byte
-{
-	None,
-	Floor,
-	Round,
-	Ceiling,
-}
-public struct IntManipulator
-{
-	public float? PreAdd;
-	public float? Multiply;
-	public float? Add;
-	public int? Set;
-	public static IntManipulator FromJson(JsonObject root, string property)
-	{
-		var i = new IntManipulator();
-		if (!root.TryGetPropertyValue(property, out var j))
-			return i;
-		if (j.GetValueKind() is JsonValueKind.Number)
-		{
-			i.Multiply = (float)j;
-			return i;
-		}
-        var json = j.AsObject();
-        if (json.TryGetPropertyValue("Set", out var setProp))
-        {
-			i.Set = (int)setProp;
-			return i;
-        }
-        if (json.TryGetPropertyValue("PreAdd", out var paProp))
-			i.PreAdd = (float)paProp;
-		if (json.TryGetPropertyValue("Multiply", out var mulProp))
-			i.Multiply = (float)mulProp;
-		if (json.TryGetPropertyValue("Add", out var addProp))
-			i.Add = (float)addProp;
-		return i;
-	}
-	public readonly int Apply(int value, RoundingType rounding = 0) 
-	{
-		if (Set.HasValue)
-			return Set.Value;
-		float val = value;
-		if (PreAdd.HasValue)
-			val += PreAdd.Value;
-		if (Multiply.HasValue)
-			val *= Multiply.Value;
-		if (Add.HasValue)
-			val += Add.Value;
-		return SchemaUtils.Round(val, rounding);
-	}
-}
+
 public sealed class CustomBiome
 {
 	private static RenderTargetLease _lease;

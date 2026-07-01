@@ -12,6 +12,7 @@ namespace AdventureTools.UI;
 public sealed class IDPicker : UIElement
 {
     public object Label;
+    public Rectangle? Frame;
     public SubPanelScr OpenTo;
     private static readonly Asset<Texture2D> _searchIcon = ModContent.Request<Texture2D>("Daybreak/Assets/Images/UI/SearchIcon");
     public override void LeftMouseDown(UIMouseEvent evt)
@@ -37,7 +38,8 @@ public sealed class IDPicker : UIElement
             spriteBatch.Draw(new DrawParameters(tex)
             {
                 Position = new Vector2(d.X, y),
-                Origin = new Vector2(-8f, tex.Height() * 0.5f),
+                Origin = Frame.HasValue ? Frame.Value.Size() * 0.5f : new Vector2(-8f, tex.Height() * 0.5f),
+                Source = Frame,
             });
         }
     }

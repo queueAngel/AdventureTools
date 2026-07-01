@@ -15,7 +15,7 @@ public sealed class VariantDisplay(int male, Player player) : UIElement
 {
     public int MaleVersion = male;
     public Player Player = player;
-    public LocalizedText Text = AdventureTools.Instance.GetLocalization(string.Concat("PlayerVariantNames.", PlayerVariantID.Search.GetName(male).AsSpan(4)));
+    public LocalizedText Text = male == PlayerVariantID.MaleDisplayDoll ? Lang.GetItemName(ItemID.Mannequin) : AdventureTools.Instance.GetLocalization(string.Concat("PlayerVariantNames.", PlayerVariantID.Search.GetName(male).AsSpan(4)));
 
     public override void LeftMouseDown(UIMouseEvent evt)
     {
