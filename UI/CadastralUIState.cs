@@ -160,32 +160,33 @@ public sealed class CadastralUIState : UIState
                 name.Default.Text = schema?["Name"]?["en-US"]?.ToString() ?? string.Empty;
                 // music
                 Main.instance.LoadItem(ItemID.MusicBox);
+                var vSize = 16f;
                 var musPicker = new IDPicker
                 {
                     OpenTo = SubPanelScr.Music,
                     Label = TextureAssets.Item[ItemID.MusicBox],
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(musPicker);
                 var sbgPicker = new IDPicker
                 {
                     OpenTo = SubPanelScr.SurfaceBg,
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(sbgPicker);
                 var ubgPicker = new IDPicker
                 {
                     OpenTo = SubPanelScr.UndergroundBg,
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(ubgPicker);
                 var effectsButton = new TextButton
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                     Text = mod.GetLocalization("SchemaUI.Biome.EffectsButton"),
                     Action = () => OpenSecondPanel(SubPanelScr.BiomeEffects),
                 };
@@ -205,7 +206,7 @@ public sealed class CadastralUIState : UIState
                         AppearanceNode[CurrentColorPick] = self.Color.Hex3();
                 };
                 List.Add(pickerWMenu);
-                var light = new TextButton { Width = StyleDimension.Fill, Height = new(32f, 0f), Text = mod.GetLocalization("SchemaUI.Biome.LightColorButton"), Action = () =>
+                var light = new TextButton { Width = StyleDimension.Fill, Height = new(vSize, 0f), Text = mod.GetLocalization("SchemaUI.Biome.LightColorButton"), Action = () =>
                 {
                     CurrentColorPick = "LightColor";
                     pickerWMenu.IgnoresMouseInteraction = false;
@@ -213,7 +214,7 @@ public sealed class CadastralUIState : UIState
                     if (pickColor.HasValue)
                         picker.Color = pickColor.Value;
                 }};
-                var backgroundLight = new TextButton { Width = StyleDimension.Fill, Height = new(32f, 0f), Text = mod.GetLocalization("SchemaUI.Biome.BackgroundLightColorButton"), Action = () =>
+                var backgroundLight = new TextButton { Width = StyleDimension.Fill, Height = new(vSize, 0f), Text = mod.GetLocalization("SchemaUI.Biome.BackgroundLightColorButton"), Action = () =>
                 {
                     CurrentColorPick = "BackgroundLightColor";
                     pickerWMenu.IgnoresMouseInteraction = false;
@@ -226,7 +227,7 @@ public sealed class CadastralUIState : UIState
                 var buffsButton = new TextButton
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                     Text = mod.GetLocalization("SchemaUI.Biome.BuffsButton"),
                     Action = () => OpenSecondPanel(SubPanelScr.Buffs)
                 };
@@ -238,37 +239,37 @@ public sealed class CadastralUIState : UIState
                     Label = t,
                     Frame = t.Frame(3, 6, 1, 4), // change vertical frames to 7 in 1.4.5
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(mountPicker);
                 var globalScaling = new ScalingModule(schema, "Scaling")
                 { 
                     Width = StyleDimension.Fill,
-                    Height = new(180f, 0f),
+                    Height = new((vSize * 4f) + 32f, 0f),
                 };
                 List.Add(globalScaling);
                 var spawnRate = new IntModifierModule(schema, "SpawnRate")
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(spawnRate);
                 var maxSpawns = new IntModifierModule(schema, "MaxSpawns")
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(maxSpawns);
                 var vanillaWeight = new IntModifierModule(schema, "VanillaSpawnWeight")
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                 };
                 List.Add(vanillaWeight);
                 var spawnsButton = new TextButton
                 {
                     Width = StyleDimension.Fill,
-                    Height = new(32f, 0f),
+                    Height = new(vSize, 0f),
                     Text = mod.GetLocalization("SchemaUI.Biome.SpawnsButton"),
                     Action = () => OpenSecondPanel(SubPanelScr.Spawns)
                 };
@@ -531,7 +532,7 @@ public sealed class CadastralUIState : UIState
             case SubPanelScr.Hair:
                 s.Width.Pixels = 32f * 8f;
                 s.Height.Pixels = s.Width.Pixels * 1.25f;
-                var grid = new DynamicGrid()
+                var grid = new DynamicGrid
                 {
                     Width = StyleDimension.Fill,
                     Height = StyleDimension.Fill,
@@ -552,7 +553,7 @@ public sealed class CadastralUIState : UIState
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.HairDye:
-                grid = new DynamicGrid()
+                grid = new DynamicGrid
                 {
                     Width = StyleDimension.Fill,
                     Height = StyleDimension.Fill,
@@ -575,7 +576,7 @@ public sealed class CadastralUIState : UIState
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Style:
-                grid = new DynamicGrid()
+                grid = new DynamicGrid
                 {
                     Width = StyleDimension.Fill,
                     Height = StyleDimension.Fill,
@@ -596,7 +597,7 @@ public sealed class CadastralUIState : UIState
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Accessories:
-                var list = new UIList() { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
+                var list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
                 var scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
                 body.Append(scrollBar);
                 var types = EquipLoader.EquipTypes;
@@ -622,7 +623,7 @@ public sealed class CadastralUIState : UIState
                 s.Height.Pixels = 32f * 14f;
                 break;
             case SubPanelScr.Music:
-                grid = new DynamicGrid()
+                grid = new DynamicGrid
                 {
                     Width = StyleDimension.Fill,
                     Height = StyleDimension.Fill,
@@ -693,7 +694,7 @@ public sealed class CadastralUIState : UIState
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Mount:
-                grid = new DynamicGrid()
+                grid = new DynamicGrid
                 {
                     Width = StyleDimension.Fill,
                     Height = StyleDimension.Fill,
@@ -707,11 +708,31 @@ public sealed class CadastralUIState : UIState
                 body.Append(grid);
                 s.Width.Pixels = 32f * 8f;
                 s.Height.Pixels = s.Width.Pixels * 1.25f;
-                grid.Add(Enumerable.Range(-1, MountLoader.MountCount).Select(static i => new MountDisplay(i, Main.LocalPlayer)));
+                grid.Add(Enumerable.Range(-2, MountLoader.MountCount + 1).Select(static i => new MountDisplay(i, Main.LocalPlayer)));
                 s.Recalculate();
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Spawns:
+                list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
+                scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
+                body.Append(scrollBar);
+                var rules = SchemaVal.AnalyzingSchema["SpawnPool"] as JsonArray;
+                var amt = rules?.Count ?? 0;
+                h = StyleDimension.FromPixels(124f);
+                for (int i = 0; i < amt; i++)
+                {
+                    list.Add(new SpawnRuleElement(rules, i)
+                    {
+                        Width = StyleDimension.Fill,
+                        Height = h,
+                    });
+                }
+                scrollBar.SetView(100f, h.Pixels * amt);
+                list.SetScrollbar(scrollBar);
+                s.Handles.Add(list._innerList);
+                body.Append(list);
+                s.Width.Pixels = 32f * 12f;
+                s.Height.Pixels = 32f * 14f;
                 break;
         }
         Append(s);
