@@ -55,7 +55,6 @@ public sealed class BiomeSystem : ModSystem
 			File.WriteAllText(filePath, defaultContent);
 		using var file = File.Open(filePath, FileMode.OpenOrCreate);
 		biomesNode = JsonNode.Parse(file, documentOptions: new JsonDocumentOptions { AllowTrailingCommas = true });
-		customBiomes.Clear();
     }
     public override void OnWorldUnload()
     {
@@ -69,13 +68,39 @@ public sealed class BiomeSystem : ModSystem
 		biomesNode.WriteTo(writer);
 		biomesNode = null;
     }
-    public override void SaveWorldData(TagCompound tag)
+    public unsafe override void SaveWorldData(TagCompound tag)
     {
-
+		if (customBiomes.Count == 0)
+			return;
+		var compounds = new List<TagCompound>(customBiomes.Count);
+		foreach (var biome in CollectionsMarshal.AsSpan(customBiomes))
+		{
+			var compound = new TagCompound();
+			var area = new int[biome.Area.Length];
+			fixed (void* p = &area[0])
+				biome.Area.AsSpan().CopyTo(new Span<UPoint16>(p, area.Length));
+            compound.Add("s", (short)biome.Schema.GetElementIndex());
+            compound.Add("p", area);
+			compounds.Add(compound);
+		}
+		tag["biomes"] = compounds;
+        customBiomes.Clear();
     }
-    public override void LoadWorldData(TagCompound tag)
+    public unsafe override void LoadWorldData(TagCompound tag)
     {
+        if (!tag.TryGet("biomes", out IList<TagCompound> compounds))
+			return;
 
+		foreach (var compound in compounds)
+		{
+			var schema = biomesNode["Biomes"][compound.GetShort("s")].AsObject();
+			var area = compound.GetIntArray("p");
+			var realArea = new UPoint16[area.Length];
+            fixed (void* p = &realArea[0])
+				area.AsSpan().CopyTo(new Span<int>(p, area.Length));
+            var biome = new CustomBiome { Schema = schema, Area = realArea };
+			customBiomes.Add(biome);
+		}
     }
 	public static readonly Asset<Texture2D> _selectBox = ModContent.Request<Texture2D>(nameof(AdventureTools) + "/SelectBox");
     public override void PostDrawTiles()
