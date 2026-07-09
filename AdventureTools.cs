@@ -98,7 +98,8 @@ public sealed class BiomeSystem : ModSystem
 			var realArea = new UPoint16[area.Length];
             fixed (void* p = &realArea[0])
 				area.AsSpan().CopyTo(new Span<int>(p, area.Length));
-            var biome = new CustomBiome { Schema = schema, Area = realArea };
+            var biome = new CustomBiome { Schema = schema };
+			biome.RefreshBoxes(realArea);
 			customBiomes.Add(biome);
 		}
     }
@@ -436,6 +437,15 @@ public sealed class CustomBiome
             }
         }
 		return currentCustomBiome;
+    }
+	public void RefreshBoxes(UPoint16[] area = null)
+	{
+		if (area != null)
+			Area = area;
+		if (Area is null)
+			return;
+		var box = BoundingBox = GeometryUtils.BoundingBox(Area);
+		WorldBox = new Rectangle(box.Left * 16, box.Top * 16, (box.Right - box.Left) * 16, (box.Bottom - box.Top) * 16);
     }
 }
 public struct UQuadrat16

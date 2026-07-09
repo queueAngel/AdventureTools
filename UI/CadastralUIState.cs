@@ -840,16 +840,9 @@ public sealed class CadastralUIState : UIState
     internal static bool _rectangleDemarcation;
     private static void PushProcessingPoly()
     {
-        var area = _processingPolygon.ToArray();
-        var box = GeometryUtils.BoundingBox(area);
-        var wBox = new Rectangle(box.Left * 16, box.Top * 16, (box.Right - box.Left) * 16, (box.Bottom - box.Top) * 16);
-        BiomeSystem.customBiomes.Add(new CustomBiome()
-        {
-            Area = area,
-            BoundingBox = box,
-            WorldBox = wBox,
-            Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject()
-        }); // debug
+        var b = new CustomBiome() { Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject() };
+        b.RefreshBoxes(_processingPolygon.ToArray());
+        BiomeSystem.customBiomes.Add(b);
     }
     public override void LeftMouseDown(UIMouseEvent evt)
     {

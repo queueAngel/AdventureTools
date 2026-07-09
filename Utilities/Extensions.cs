@@ -14,6 +14,8 @@ public static class Extensions
         public static StyleDimension Quarter => StyleDimension.FromPercent(0.25f);
         public static StyleDimension Third => StyleDimension.FromPercent(1f / 3f);
         public static StyleDimension Half => StyleDimension.FromPercent(0.5f);
+        public static StyleDimension operator +(StyleDimension a, StyleDimension b) => new(a.Pixels + b.Pixels, a.Percent + b.Percent);
+        public static StyleDimension operator -(StyleDimension a, StyleDimension b) => new(a.Pixels - b.Pixels, a.Percent - b.Percent);
         public static StyleDimension operator +(StyleDimension a, float b) => new(a.Pixels + b, a.Percent);
         public static StyleDimension operator -(StyleDimension a, float b) => new(a.Pixels - b, a.Percent);
         public static StyleDimension operator *(StyleDimension a, float b) => new(a.Pixels * b, a.Percent * b);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -42,6 +43,26 @@ public sealed class WorldNPCTile : ModTile
         else
             entity.Draw(i, j);
     }
+    public override void MouseOverFar(int i, int j)
+    {
+        if (Dummy is null)
+        {
+            Dummy = new();
+            Dummy.SetDefaults(ModContent.NPCType<WorldNPC>());
+            Dummy.hide = true;
+            Dummy.noTileCollide = true;
+            Prev = Main.npc[Main.maxNPCs - 1];
+        }
+        var te = (WorldNPCTileEntity)TileEntity.ByPosition[new Point16(i, j)];
+        var world = (WorldNPC)Dummy.ModNPC;
+        world.Static = true;
+        Dummy.direction = Dummy.spriteDirection = te.Direction;
+        Dummy.position = new Vector2(i * 16f, j * 16f - 25f);
+        world.Schema = te.Schema;
+        Main.npc[Main.maxNPCs - 1] = Dummy;
+    }
+    private static NPC Dummy;
+    private static NPC Prev;
 }
 public sealed class WorldNPCTileEntity : ModTileEntity
 {
