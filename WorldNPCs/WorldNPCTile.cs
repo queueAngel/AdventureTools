@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AdventureTools.Items;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
@@ -16,6 +17,27 @@ public sealed class WorldNPCTile : ModTile
 {
     public override string Texture => "Terraria/Images/NPC_" + NPCID.None;
     public static ushort TileType;
+    public override void Load()
+    {
+        if (Main.dedServ)
+            return;
+        On_Main.GUIChatDraw += static (orig, self) =>
+        {
+            orig(self);
+            /*
+            var p = Main.LocalPlayer;
+            var u = Main.maxNPCs - 1;
+            ref var n = ref Main.npc[u];
+            var swap = p.talkNPC == u;
+            if (swap)
+                n = Dummy;
+            orig(self);
+            if (swap)
+                n = Prev;
+            */
+        };
+    }
+
     public override void SetStaticDefaults()
     {
         TileType = Type;
@@ -49,20 +71,21 @@ public sealed class WorldNPCTile : ModTile
         {
             Dummy = new();
             Dummy.SetDefaults(ModContent.NPCType<WorldNPC>());
+            ((WorldNPC)Dummy.ModNPC).Static = true;
             Dummy.hide = true;
             Dummy.noTileCollide = true;
+            Dummy.noGravity = true;
             Prev = Main.npc[Main.maxNPCs - 1];
         }
         var te = (WorldNPCTileEntity)TileEntity.ByPosition[new Point16(i, j)];
-        var world = (WorldNPC)Dummy.ModNPC;
-        world.Static = true;
+        Dummy.velocity = default;
         Dummy.direction = Dummy.spriteDirection = te.Direction;
         Dummy.position = new Vector2(i * 16f, j * 16f - 25f);
-        world.Schema = te.Schema;
+        ((WorldNPC)Dummy.ModNPC).Schema = te.Schema;
         Main.npc[Main.maxNPCs - 1] = Dummy;
     }
-    private static NPC Dummy;
-    private static NPC Prev;
+    internal static NPC Dummy;
+    internal static NPC Prev;
 }
 public sealed class WorldNPCTileEntity : ModTileEntity
 {
@@ -98,6 +121,7 @@ public sealed class WorldNPCTileEntity : ModTileEntity
         p.direction = Direction;
         p.sitting.isSitting = Sitting;
         p.Bottom = new Vector2(i * 16 + p.width * 0.5f, (j + 1) * 16);
-        Main.PlayerRenderer.DrawPlayer(Main.Camera, p, p.position, 0f, Vector2.Zero);
+        if (Schema != null || Main.LocalPlayer.GetModPlayer<CadastralPlayer>().operatingCrawler)
+            Main.PlayerRenderer.DrawPlayer(Main.Camera, p, p.position, 0f, Vector2.Zero);
     }
 }

@@ -1,4 +1,5 @@
-﻿using AdventureTools.Utilities;
+﻿using AdventureTools.Items;
+using AdventureTools.Utilities;
 using Daybreak.Common.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -170,7 +171,8 @@ public sealed class WorldNPC : ModNPC
     {
         PrintFromNPC();
         Dummy.Center = NPC.Center;
-        Main.PlayerRenderer.DrawPlayer(Main.Camera, Dummy, Dummy.position, 0f, Vector2.Zero);
+        if (Schema != null || Main.LocalPlayer.GetModPlayer<CadastralPlayer>().operatingCrawler)
+            Main.PlayerRenderer.DrawPlayer(Main.Camera, Dummy, Dummy.position, 0f, Vector2.Zero);
     }
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {

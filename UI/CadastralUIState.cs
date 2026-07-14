@@ -347,8 +347,16 @@ public sealed class CadastralUIState : UIState
                 var m = AdventureTools.Instance;
                 var dialogueLabel =$"{ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.AnnouncementBox])} {m.GetLocalization("SchemaUI.NPC.EditDialogue")}";
                 var shopLabel = $"{ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.DiscountCard])} {Lang.inter[28]}";
-                var dialogueButton = new TextButton() { Text = dialogueLabel, Width = StyleDimension.FromPercent(0.5f), Height = name.Height, Top = name.Height };
-                var shopButton = new TextButton() { Text = shopLabel, Width = dialogueButton.Width, Height = dialogueButton.Height, Top = dialogueButton.Height, HAlign = 1f };
+                var dialogueButton = new TextButton
+                { 
+                    Text = dialogueLabel, Width = StyleDimension.FromPercent(0.5f), Height = name.Height, Top = name.Height,
+                    Action = () => OpenSecondPanel(SubPanelScr.Dialogue)
+                };
+                var shopButton = new TextButton
+                { 
+                    Text = shopLabel, Width = dialogueButton.Width, Height = dialogueButton.Height, Top = dialogueButton.Height, HAlign = 1f,
+                    Action = () => OpenSecondPanel(SubPanelScr.Shop)
+                };
                 subPanel.Append(dialogueButton);
                 subPanel.Append(shopButton);
 
@@ -382,7 +390,7 @@ public sealed class CadastralUIState : UIState
                 skin.Left.Pixels += px * 2f;
                 pickerWMenu.Left.Pixels = px * 0.5f;
 
-                var bottomPanel = new UIElement() { Height = StyleDimension.FromPixels(px * 2f), Width = StyleDimension.Fill };
+                var bottomPanel = new UIElement { Height = StyleDimension.FromPixels(px * 2f), Width = StyleDimension.Fill };
 
                 bottomPanel.Append(hair);
                 bottomPanel.Append(eye);
@@ -393,9 +401,9 @@ public sealed class CadastralUIState : UIState
                 bottomPanel.Append(shoes);
 
                 // acc and json buttons
-                var acc = new TextButton() { Text = Lang.inter[79], Width = StyleDimension.Fill, Height = StyleDimension.Half, Action = () => OpenSecondPanel(SubPanelScr.Accessories) };
-                var jsonCopy = new TextButton() { Text = mod.GetLocalization("SchemaUI.CopyJson"), Top = StyleDimension.Half, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () => Platform.Get<IClipboard>().Value = SchemaVal.AnalyzingSchema.ToString() };
-                var jsonPaste = new TextButton() { Text = mod.GetLocalization("SchemaUI.PasteJson"), Top = StyleDimension.Half, HAlign = 1f, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () =>
+                var acc = new TextButton { Text = Lang.inter[79], Width = StyleDimension.Fill, Height = StyleDimension.Half, Action = () => OpenSecondPanel(SubPanelScr.Accessories) };
+                var jsonCopy = new TextButton { Text = mod.GetLocalization("SchemaUI.CopyJson"), Top = StyleDimension.Half, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () => Platform.Get<IClipboard>().Value = SchemaVal.AnalyzingSchema.ToString() };
+                var jsonPaste = new TextButton { Text = mod.GetLocalization("SchemaUI.PasteJson"), Top = StyleDimension.Half, HAlign = 1f, Width = StyleDimension.Half, Height = StyleDimension.Half, Action = static () =>
                 {
                     /*
                     var parsed = default(JsonNode);
@@ -622,6 +630,10 @@ public sealed class CadastralUIState : UIState
                 s.Width.Pixels = 32f * 12f;
                 s.Height.Pixels = 32f * 14f;
                 break;
+            case SubPanelScr.Dialogue:
+                // some system made entirely in one uieelement
+                // cuz using multiple sounds like a nightmare
+                break;
             case SubPanelScr.Music:
                 grid = new DynamicGrid
                 {
@@ -840,7 +852,7 @@ public sealed class CadastralUIState : UIState
     internal static bool _rectangleDemarcation;
     private static void PushProcessingPoly()
     {
-        var b = new CustomBiome() { Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject() };
+        var b = new CustomBiome(); // { Schema = BiomeSystem.biomesNode["Biomes"][0].AsObject() };
         b.RefreshBoxes(_processingPolygon.ToArray());
         BiomeSystem.customBiomes.Add(b);
     }
@@ -878,7 +890,7 @@ public sealed class CadastralUIState : UIState
                     SoundEngine.PlaySound(SoundID.Item132);
                     var npc = NPC.NewNPCDirect(Main.LocalPlayer.GetSource_FromThis(), CadastralPlayer.realMouse, ModContent.NPCType<WorldNPC>());
                     var modNpc = (WorldNPC)npc.ModNPC;
-                    modNpc.Schema = BiomeSystem.biomesNode["NPCs"][0].AsObject();
+                    // modNpc.Schema = BiomeSystem.biomesNode["NPCs"][0].AsObject();
                     break;
                 case CadastralAction.AddNPCTile:
                     var tileCoords = CadastralPlayer.realPosition;
@@ -961,6 +973,8 @@ public sealed class CadastralUIState : UIState
         foreach (var npc in Main.ActiveNPCs)
         {
             if (npc.ModNPC is not WorldNPC)
+                continue;
+            if (npc == WorldNPCTile.Dummy)
                 continue;
             if (npc.Hitbox.Intersects(selectBox))
             {
