@@ -48,6 +48,7 @@ public enum PanelScreen
 public enum SubPanelScr
 {
     None,
+    LocalizedText,
     Hair,
     HairDye,
     Style,
@@ -537,6 +538,30 @@ public sealed class CadastralUIState : UIState
         s.Handles.Add(body);
         switch (screen)
         {
+            case SubPanelScr.LocalizedText:
+                var h = StyleDimension.FromPixels(42f);
+                var addButton = new TextButton { Text = "+", Height = h, Width = StyleDimension.Fill };
+                var list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f, ManualSortMethod = l =>
+                {
+                    var i = l.LastIndexOf(addButton);
+                    var t = l[i];
+                    l.RemoveAt(i);
+                    l.Add(t);
+                }};
+                var e = LocalizedTextElement.Editing;
+                addButton.Action = () => list.Add(LocalizedTextElement.Make("", e, h));
+                list.Add(addButton);
+                var scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
+                body.Append(scrollBar);
+                foreach (var x in e)
+                    list.Add(LocalizedTextElement.Make(x.Key, e, h));
+                scrollBar.SetView(100f, h.Pixels * e.Count);
+                list.SetScrollbar(scrollBar);
+                s.Handles.Add(list._innerList);
+                body.Append(list);
+                s.Width.Pixels = 32f * 12f;
+                s.Height.Pixels = 32f * 14f;
+                break;
             case SubPanelScr.Hair:
                 s.Width.Pixels = 32f * 8f;
                 s.Height.Pixels = s.Width.Pixels * 1.25f;
@@ -605,11 +630,11 @@ public sealed class CadastralUIState : UIState
                 grid.RecalculateElements();
                 break;
             case SubPanelScr.Accessories:
-                var list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
-                var scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
+                list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
+                scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
                 body.Append(scrollBar);
                 var types = EquipLoader.EquipTypes;
-                var h = StyleDimension.FromPixels(42f);
+                h = StyleDimension.FromPixels(42f);
                 for (int i = 0; i < types.Length; i++)
                 {
                     list.Add(new EquipPicker

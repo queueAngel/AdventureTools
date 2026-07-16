@@ -71,7 +71,6 @@ public sealed class SchemaVal : UIElement
         var a = schema.GetElementIndex() + direction;
         var b = arr.Count;
         var idx = ((a % b) + b) % b;
-        Console.WriteLine($"{idx}, {arr.Count}");
         schema = (JsonObject)arr[idx];
     }
     protected override void DrawSelf(SpriteBatch spriteBatch)
