@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.GameContent;
 using Terraria.GameContent.Drawing;
 using Terraria.ID;
 using Terraria.ModLoader;

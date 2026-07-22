@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using ReLogic.Content;
 using System;
 using Terraria;
 using Terraria.UI;
@@ -9,6 +10,11 @@ public static class Extensions
 {
     public static CustomBiomePlayer Biomes(this Player p) => p.GetModPlayer<CustomBiomePlayer>();
     public static CalculatedStyle ToDims(this Rectangle r) => new(r.X, r.Y, r.Width, r.Height);
+    public static void AsyncLoad<T>(this Asset<T> a) where T : class
+    {
+        if (a.State == AssetState.NotLoaded)
+            Main.Assets.Request<T>(a.Name, AssetRequestMode.AsyncLoad);
+    }
     extension(StyleDimension)
     {
         public static StyleDimension Quarter => StyleDimension.FromPercent(0.25f);

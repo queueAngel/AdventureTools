@@ -3,7 +3,6 @@ using AdventureTools.WorldNPCs;
 using Daybreak.Common.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Text.Json.Nodes;
 using Terraria;
 using Terraria.GameContent;
@@ -59,6 +58,8 @@ public sealed class SchemaVal : UIElement
         Append(new TextButton { HAlign = 1f, VAlign = 0.5f, Left = StyleDimension.FromPixels(-3f), MinWidth = StyleDimension.FromPixels(32f), MinHeight = StyleDimension.FromPixels(32f), Text = ItemTagHandler.GenerateTag(ContentSamples.ItemsByType[ItemID.WireKite]), Action = () =>
         {
             var schema = AnalyzingSchema = GetSchema();
+            if (schema is null)
+                return;
             CadastralUIState.Instance.ReinitializePanel(schema.Parent.GetPropertyName() is "Biomes" ? PanelScreen.BiomeSchema : PanelScreen.NPCSchema);
         }});
     }

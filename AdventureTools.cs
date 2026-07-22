@@ -384,13 +384,12 @@ public sealed class CustomBiomeSpawns : GlobalNPC
 			var rule = ruleNode.AsObject();
 			if (!rule.TryGetPropertyValue("Type", out var typeNode) || !NPCID.Search.TryGetId((string)typeNode, out var type))
 				continue;
-			if (rule.TryGetPropertyValue("Tile", out var tileNode) && TileID.Search.TryGetId((string)tileNode, out var tileId))
+			if (!rule.TryGetPropertyValue("Rate", out var rateNode))
+				continue;
+            if (rule.TryGetPropertyValue("Tile", out var tileNode) && TileID.Search.TryGetId((string)tileNode, out var tileId))
 				if (spawnInfo.SpawnTileType != tileId)
 					continue;
-			var chance = 1f;
-			if (rule.TryGetPropertyValue("Rate", out var rateNode))
-				chance = (float)rateNode;
-			pool.Add(type, chance);
+			pool.Add(type, (float)rateNode);
 		}
     }
     public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)

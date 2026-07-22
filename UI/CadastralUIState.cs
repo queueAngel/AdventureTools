@@ -44,6 +44,7 @@ public enum PanelScreen
     NPC,
     NPCTile,
     NPCSchema,
+    Spawns,
 }
 public enum SubPanelScr
 {
@@ -61,7 +62,7 @@ public enum SubPanelScr
     BiomeEffects,
     Buffs,
     Mount,
-    Spawns,
+    NPC,
 }
 public sealed class CadastralUIState : UIState
 {
@@ -272,7 +273,7 @@ public sealed class CadastralUIState : UIState
                     Width = StyleDimension.Fill,
                     Height = new(vSize, 0f),
                     Text = mod.GetLocalization("SchemaUI.Biome.SpawnsButton"),
-                    Action = () => OpenSecondPanel(SubPanelScr.Spawns)
+                    Action = () => ReinitializePanel(PanelScreen.Spawns),
                 };
                 List.Add(spawnsButton);
                 break;
@@ -476,6 +477,34 @@ public sealed class CadastralUIState : UIState
                 List.Add(pickerPanel);
                 List.Add(bottomPanel);
                 break;
+            case PanelScreen.Spawns:
+                var rules = SchemaVal.AnalyzingSchema["SpawnPool"] as JsonArray;
+                var amt = rules?.Count ?? 0;
+                var h = StyleDimension.FromPixels(172f);
+                for (int i = 0; i < amt; i++)
+                {
+                    List.Add(new SpawnRuleElement(rules, i)
+                    {
+                        Width = StyleDimension.Fill,
+                        Height = h,
+                    });
+                }
+                var addButton = new TextButton
+                {
+                    Width = StyleDimension.Fill,
+                    Height = h * 0.5f,
+                };
+                addButton.Action = () =>
+                {
+                    List.Remove(addButton);
+                    var arr = (JsonArray)(SchemaVal.AnalyzingSchema["SpawnPool"] ??= new JsonArray());
+                    arr.Add(new JsonObject([KeyValuePair.Create("Type", (JsonNode)JsonValue.Create("None")), KeyValuePair.Create("Rate", (JsonNode)JsonValue.Create(0f)) ]));
+                    var idx = List.Count;
+                    List.Add(new SpawnRuleElement(arr, idx - 2) { Width = StyleDimension.Fill, Height = h });
+                    List.Add(addButton);
+                };
+                List.Add(addButton);
+                break;
         }
     }
     private static UIColoredImageButton _lastPicked;
@@ -602,9 +631,8 @@ public sealed class CadastralUIState : UIState
                 s.Height.Pixels = s.Width.Pixels * 1.25f;
                 grid.Add(new HairDyeDisplay(ContentSamples.ItemsByType[ItemID.HairDyeRemover], WorldNPC.Dummy));
                 grid.Add(Enumerable.Range(0, ItemLoader.ItemCount - 1).Where(static i => ContentSamples.ItemsByType[i].hairDye != -1 && i != ItemID.HairDyeRemover).Select(static i =>
-                {
-                    return new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy);
-                }));
+                    new HairDyeDisplay(ContentSamples.ItemsByType[i], WorldNPC.Dummy)
+                ));
                 s.Recalculate();
                 grid.RecalculateElements();
                 break;
@@ -615,7 +643,7 @@ public sealed class CadastralUIState : UIState
                     Height = StyleDimension.Fill,
                     XSpacing = 4f,
                     YSpacing = 4f,
-                    ElementWidth = 64f,
+                    ElementWidth = 82f,
                     ElementHeight = 82f,
                     OverflowHidden = true,
                 };
@@ -749,30 +777,32 @@ public sealed class CadastralUIState : UIState
                 s.Recalculate();
                 grid.RecalculateElements();
                 break;
-            case SubPanelScr.Spawns:
-                list = new UIList { Height = StyleDimension.Fill, Width = StyleDimension.Fill - 16f };
-                scrollBar = new UIScrollbar { HAlign = 1f, Width = new(16f, 0f), Height = StyleDimension.Fill };
-                body.Append(scrollBar);
-                var rules = SchemaVal.AnalyzingSchema["SpawnPool"] as JsonArray;
-                var amt = rules?.Count ?? 0;
-                h = StyleDimension.FromPixels(124f);
-                for (int i = 0; i < amt; i++)
+            case SubPanelScr.NPC:
+                grid = new DynamicGrid
                 {
-                    list.Add(new SpawnRuleElement(rules, i)
-                    {
-                        Width = StyleDimension.Fill,
-                        Height = h,
-                    });
-                }
-                scrollBar.SetView(100f, h.Pixels * amt);
-                list.SetScrollbar(scrollBar);
-                s.Handles.Add(list._innerList);
-                body.Append(list);
-                s.Width.Pixels = 32f * 12f;
-                s.Height.Pixels = 32f * 14f;
+                    Width = StyleDimension.Fill,
+                    Height = StyleDimension.Fill,
+                    XSpacing = 4f,
+                    YSpacing = 4f,
+                    ElementWidth = 96f,
+                    ElementHeight = 82f,
+                    OverflowHidden = true,
+                };
+                s.Handles.Add(grid);
+                body.Append(grid);
+                s.Width.Pixels = 32f * 8f;
+                s.Height.Pixels = s.Width.Pixels * 1.25f;
+                grid.Add(RealRange(NPCID.NegativeIDCount + 1, NPCLoader.NPCCount).Select(static i => new NPCDisplay(i)));
+                s.Recalculate();
+                grid.RecalculateElements();
                 break;
         }
         Append(s);
+    }
+    private static IEnumerable<int> RealRange(int start, int end)
+    {
+        while (start < end)
+            yield return start++;
     }
     public void ReinitializePanel(PanelScreen withScreen = 0)
     {
